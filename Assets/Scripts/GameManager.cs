@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance;
     public Board board;    
+    public bool white;
     // Squares will be stored in an array for faster traversing than a list.
 
     
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         instance = this;
+        white = true;
         board = FindObjectOfType<Board>();
     }
 

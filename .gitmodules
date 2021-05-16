@@ -1,0 +1,3 @@
+[submodule "unity-python"]
+	path = unity-python
+	url = https://github.com/exodrifter/unity-python.git

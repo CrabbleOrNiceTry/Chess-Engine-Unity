@@ -185,6 +185,13 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "space.exodrifter.python": {
+      "version": "https://github.com/exodrifter/unity-python.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "bef6e4e9ddfbbf1eaf7acbbb973e9aa3dd64a20d"
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

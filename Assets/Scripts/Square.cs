@@ -9,10 +9,14 @@ public class Square : MonoBehaviour
     public string position;
     public string piece;
     public GameObject pieceObj;
+    public bool isPinned;
+    public int piecePinning;
 
     void Awake()
     {
         piece = "";
+        isPinned = false;
+        piecePinning = "";
     }
 
     public void SetPosition(string position)

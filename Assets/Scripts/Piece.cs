@@ -26,8 +26,10 @@ public class Piece : MonoBehaviour
             controllingPiece = false;
             wasControlled = true;
             GameObject closestObjectToMouse = GetNearestSquare();
-
-            List<string> moves = GameManager.instance.board.GetLegalMoves();
+            // List<string> moves = new List<string>();
+            float time = Time.realtimeSinceStartup;
+            string[] moves = GameManager.instance.board.GetLegalMoves();
+            Debug.Log("Outside Function: " + (Time.realtimeSinceStartup - time));
 
             string move = originalSquare.position + closestObjectToMouse.GetComponent<Square>().position;
             bool moveFound = false;
@@ -45,6 +47,8 @@ public class Piece : MonoBehaviour
                     originalSquare.piece = "";
                     
                     moveFound = true;
+                    GameManager.instance.white = !GameManager.instance.white;
+                    break;
                 }
             }
             if (!moveFound)
