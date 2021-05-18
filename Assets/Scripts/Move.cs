@@ -11,4 +11,9 @@ public class Move
         this.original = original;
         this.newSquare = newSquare;
     }
+
+    public string ToString()
+    {
+        return original.position + newSquare.position;
+    }
 }

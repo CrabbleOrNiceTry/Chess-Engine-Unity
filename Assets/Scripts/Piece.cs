@@ -28,14 +28,14 @@ public class Piece : MonoBehaviour
             GameObject closestObjectToMouse = GetNearestSquare();
             // List<string> moves = new List<string>();
             float time = Time.realtimeSinceStartup;
-            string[] moves = GameManager.instance.board.GetLegalMoves();
+            Move[] moves = GameManager.instance.board.GetLegalMoves();
             Debug.Log("Outside Function: " + (Time.realtimeSinceStartup - time));
 
-            string move = originalSquare.position + closestObjectToMouse.GetComponent<Square>().position;
+            Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>());
             bool moveFound = false;
-            foreach (string i in moves)
+            foreach (Move i in moves)
             {
-                if (i.Equals(move))
+                if (i.ToString().Equals(move.ToString()))
                 {
                     transform.position = closestObjectToMouse.transform.position;
                     if (!closestObjectToMouse.GetComponent<Square>().piece.Equals(""))
