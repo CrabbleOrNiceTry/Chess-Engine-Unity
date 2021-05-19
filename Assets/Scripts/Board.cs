@@ -95,45 +95,54 @@ public class Board : MonoBehaviour
     public Move[] GetLegalMoves()
     {
         GetPsuedoLegalMoves();
+        int tempKingIndex = kingIndex;
         for (int i = 0; i < legalMoves.Count; i++)
         {
-            string newOriginalSquare = MakeMove(legalMoves[i]);
-            if (IsInCheck(squares[kingIndex], kingIndex))
+            if (legalMoves[i].original.piece.ToUpper().Equals("K"))
             {
+                tempKingIndex = legalMoves[i].index;
+            }
+            string newOriginalSquare = MakeMove(legalMoves[i]);
+            if (IsInCheck(squares[tempKingIndex], tempKingIndex))   
+            {   
                 UnmakeMove(legalMoves[i], newOriginalSquare);
-                Debug.Log("Removing: " + legalMoves[i].ToString());
                 legalMoves.RemoveAt(i);
                 i--;
                 continue;
             }
             UnmakeMove(legalMoves[i], newOriginalSquare);
         }
-        Debug.Log(legalMoves.Count);
         return legalMoves.ToArray();
     }
 
     private bool IsInCheck(Square square, int i)
     {
-        if (KingDiagnolCheck(square, i) || KingVerticalCheck(square, i) || KingHorizontalCheck(square, i)) return true;
+        if (KingDiagnolCheck(square, i) || KingVerticalCheck(square, i) || KingHorizontalCheck(square, i) || KingKnightCheck(square, i) || KingPawnCheck(square, i)) return true;
         return false;
 
     }
 
     private string MakeMove(Move move)
     {
-        Square original = move.original;
-        Square newSquare = move.newSquare;
-        string temp = newSquare.piece;
-        newSquare.piece = original.piece;
+        // Square original = move.original;
+        // Square newSquare = move.newSquare;
+        // string temp = newSquare.piece;
+        // newSquare.piece = original.piece;
+        // return temp;
+        string temp = move.newSquare.piece;
+        move.newSquare.piece = move.original.piece;
+        move.original.piece = "";
         return temp;
     }
 
     private void UnmakeMove(Move move, string originalStr)
     {
-        Square original = move.original;
-        Square newSquare = move.newSquare;
-        original.piece = newSquare.piece;
-        newSquare.piece = originalStr;
+        // Square original = move.original;
+        // Square newSquare = move.newSquare;
+        // original.piece = newSquare.piece;
+        // newSquare.piece = originalStr;
+        move.original.piece = move.newSquare.piece;
+        move.newSquare.piece = originalStr;
     }
 
     private void GetKingMoves(Square square, int i)
@@ -143,7 +152,7 @@ public class Board : MonoBehaviour
         foreach (int j in offset)
         {
             if (i + j > 63 || i + j < 0) continue;
-            if (squares[i + j].piece.Equals("") || Char.IsUpper(squares[i + j].piece[0]) == white) legalMoves.Add(new Move(square, squares[i + j]));
+            if (squares[i + j].piece.Equals("") || Char.IsUpper(squares[i + j].piece[0]) == white) legalMoves.Add(new Move(square, squares[i + j], i + j));
         }
     }
 
@@ -158,36 +167,36 @@ public class Board : MonoBehaviour
             && square.position[1] == '2'
             && squares[i + (16 * mult)].piece.Equals(""))
         {
-            legalMoves.Add(new Move(square, squares[i + (16 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (16 * mult)], i + (16 * mult)));
         }
         else if (!white
             && square.position[1] == '7'
             && squares[i + (16 * mult)].piece.Equals(""))
         {
-            legalMoves.Add(new Move(square, squares[i + (16 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (16 * mult)], i + (16 * mult)));
         }
         if (squares[i + (8 * mult)].piece.Equals(""))
         {
-            legalMoves.Add(new Move(square, squares[i + (8 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (8 * mult)], i + (16 * mult)));
         }
         if (square.position[0] == 'a' && !squares[i + (7 * mult)].piece.Equals("") && Char.IsUpper(squares[i + (7 * mult)].piece[0]) == white)
         {
-            legalMoves.Add(new Move(square, squares[i + (7 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (7 * mult)], i + (16 * mult)));
             return;
         }
         else if (square.position[0] == 'h' && !squares[i + (9 * mult)].piece.Equals("") && Char.IsUpper(squares[i + (9 * mult)].piece[0]) == white)
         {
-            legalMoves.Add(new Move(square, squares[i + (9 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (9 * mult)], i + (16 * mult)));
             return;
         }
         if (square.position[0] == 'h' || square.position[0] == 'a') return;
         if (!squares[i + (9 * mult)].piece.Equals("") && Char.IsUpper(squares[i + (9 * mult)].piece[0]) == white)
         {
-            legalMoves.Add(new Move(square, squares[i + (9 * mult)]));
+            legalMoves.Add(new Move(square, squares[i + (9 * mult)], i + (16 * mult)));
         }
         if (!squares[i + (7 * mult)].piece.Equals("") && Char.IsUpper(squares[i + (7 * mult)].piece[0]) == white)
         {
-            legalMoves.Add(new Move(square , squares[i + (7 * mult)]));
+            legalMoves.Add(new Move(square , squares[i + (7 * mult)], i + (16 * mult)));
         }
     }
 
@@ -197,11 +206,14 @@ public class Board : MonoBehaviour
        
         for (int j = 0; j < offset.Length; j++)
         {
-            if (i + offset[j] > 63 || i + offset[j] < 0) continue;
-            if (squares[i + offset[j]].piece.Equals("")
-                || Char.IsUpper(squares[i + offset[j]].piece[0]) == white)
+            int index = i + offset[j];
+
+            if (index > 63 || index < 0) continue;
+
+            if (squares[index].piece.Equals("")
+                || Char.IsUpper(squares[index].piece[0]) == white)
             {
-                legalMoves.Add(new Move(square, squares[i + offset[j]]));
+                legalMoves.Add(new Move(square, squares[index], index));
             }
         }
     }
@@ -234,23 +246,25 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {   
-                if (i + ((j + 1) * offset[k]) < 0 || i + ((j + 1) * offset[k]) > 63) break;
-                
-                if (squares[i + ((j + 1) * offset[k])].position[0] == 'h')
+                int index = i + ((j + 1) * offset[k]);
+
+                if (index < 0 || index > 63) break;
+
+                if (squares[index].position[0] == 'h')
                 {
-                    if (squares[i + ((j + 1) * offset[k])].piece.Equals("") || Char.IsUpper(squares[i + ((j + 1) * offset[k])].piece[0]) == white)
+                    if (squares[index].piece.Equals("") || Char.IsUpper(squares[index].piece[0]) == white)
                     {
-                        legalMoves.Add(new Move(square, squares[i + ((j + 1) * offset[k])]));
+                        legalMoves.Add(new Move(square, squares[index], index));
                     }
                     break;
                 }
-                if (squares[i + ((j + 1) * offset[k])].piece.Equals("")) // square is empty add to possible moves
+                if (squares[index].piece.Equals("")) // square is empty add to possible moves
                 {
-                    legalMoves.Add(new Move(square, squares[i + ((j + 1) * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], index));
                 }
-                else if (Char.IsUpper(squares[i + ((j + 1) * offset[k])].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
+                else if (Char.IsUpper(squares[index].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
                 {
-                    legalMoves.Add(new Move(square, squares[i + ((j + 1) * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], index));
                     break;
                 }
                 else // Friendly piece is obstructing path break
@@ -270,14 +284,15 @@ public class Board : MonoBehaviour
         {
             for (int j = 1; j < 9; j++)
             {   
-                if (i + (j * offset[k]) < 0 || i + (j * offset[k]) > 63) break;
-                if (squares[i + (j * offset[k])].piece.Equals(""))
+                int index = i + (j * offset[k]);
+                if (index < 0 || index > 63) break;
+                if (squares[index].piece.Equals(""))
                 {
-                    legalMoves.Add(new Move(square, squares[i + (j * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], i));
                 }
-                else if (Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white)
+                else if (Char.IsUpper(squares[index].piece[0]) == white)
                 {
-                    legalMoves.Add(new Move(square, squares[i + (j * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], i));
                     break;
                 }
                 else
@@ -309,14 +324,17 @@ public class Board : MonoBehaviour
         {
             for (int j = 1; j < 9; j++)
             {   
-                if (i + (j * offset[k]) < 0 || i + (j * offset[k]) > 63) break;
-                if (squares[i + (j * offset[k])].piece.Equals(""))
+                int index = i + (j * offset[k]);
+
+                if (index < 0 || index > 63) break;
+                
+                if (squares[index].piece.Equals(""))
                 {
-                    legalMoves.Add(new Move(square, squares[i + (j * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], index));
                 }
-                else if (Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white)
+                else if (Char.IsUpper(squares[index].piece[0]) == white)
                 {
-                    legalMoves.Add(new Move(square, squares[i + (j * offset[k])]));
+                    legalMoves.Add(new Move(square, squares[index], index));
                     break;
                 }
                 else
@@ -338,24 +356,31 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {   
-                if (i + ((j + 1) * offset[k]) < 0 || i + ((j + 1) * offset[k]) > 63) break;
-                if (squares[i + ((j + 1) * offset[k])].piece.Equals("")) continue;
-                string piece = ("" + squares[i + ((j + 1) * offset[k])].piece[0] + "").ToUpper();
-                if (squares[i + ((j + 1) * offset[k])].position[0] == 'h')
+                int index = i + ((j + 1) * offset[k]);
+                
+                if (index < 0 || index > 63) break;
+                if (squares[index].piece.Equals("")) continue;
+
+                string piece = ("" + squares[index].piece[0] + "").ToUpper();
+
+                if (squares[index].position[0] == 'h')
                 {
-                    if (Char.IsUpper(squares[i + ((j + 1) * offset[k])].piece[0]) == white && piece.Equals("Q") || piece.Equals("R"))
+                    if (Char.IsUpper(squares[index].piece[0]) == white && piece.Equals("Q") || piece.Equals("R"))
                     {
-                        Debug.Log("Found Check at " + squares[i + ((j + 1) * offset[k])].position);
+                        Debug.Log("Found Check at " + squares[index].position);
                         return true;
                     }
                 }
-                else if (!squares[i + ((j + 1) * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + ((j + 1) * offset[k])].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
+                else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
                 {
-                    if (!piece.Equals("R") || !piece.Equals("Q")) break; // Irrelevant piece blocking diagnol meaning another bishop can't check. no need to search ray.
-                    Debug.Log("Found Check at " + squares[i + ((j + 1) * offset[k])].position);
-                    return true;
+                    if (piece.Equals("R") || piece.Equals("Q"))
+                    {
+                        Debug.Log("Found Check at " + squares[index].position);
+                        return true;
+                    }
+                    break;
                 }
-                else if (!squares[i + ((j + 1) * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + ((j + 1) * offset[k])].piece[0]) != white) // Freindly Piece
+                else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) != white) // Freindly Piece
                 {
                     break;
                 }
@@ -372,14 +397,21 @@ public class Board : MonoBehaviour
         {
             for (int j = 1; j < 9; j++)
             {   
-                if (i + (j * offset[k]) < 0 || i + (j * offset[k]) > 63) break;
+                int index = i + (j * offset[k]);
+
+                if (index < 0 || i + (j * offset[k]) > 63) break;
                 if (squares[i + (j * offset[k])].piece.Equals("")) continue;
+
                 string piece = ("" + squares[i + (j * offset[k])].piece[0]).ToUpper();
+
                 if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
                 {
-                    if (!piece.Equals("R") || !piece.Equals("Q")) break; // Irrelevant piece blocking diagnol meaning another bishop can't check. no need to search ray.
-                    Debug.Log("Found Check at " + squares[i + (j * offset[k]) ].position);
-                    return true;
+                    if (piece.Equals("R") || piece.Equals("Q"))
+                    {
+                        Debug.Log("Found Check at " + squares[i + (j * offset[k]) ].position);
+                        return true;
+                    }
+                    break;
                 }
                 else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Friendly Piece
                 {
@@ -393,6 +425,7 @@ public class Board : MonoBehaviour
     private bool KingDiagnolCheck(Square square, int i)
     {
         int[] offset;
+
         if (square.position[0] == 'a')
         {
             offset = new int[]{9, -7};
@@ -410,20 +443,53 @@ public class Board : MonoBehaviour
         {
             for (int j = 1; j < 9; j++)
             {   
-                if (i + (j * offset[k]) < 0 || i + (j * offset[k]) > 63) break;
+                if (i + (j * offset[k]) < 0 || i + (j * offset[k]) > 63) { break;}
                 if (squares[i + (j * offset[k])].piece.Equals("")) continue;
-                string piece = ("" + squares[i + (j * offset[k])].piece[0]).ToUpper();
+                string piece = ("" + squares[i + (j * offset[k])].piece).ToUpper();
+
                 if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
                 {
-                    if (!piece.Equals("B") || !piece.Equals("Q")) break; // Irrelevant piece blocking diagnol meaning another bishop can't check. no need to search ray.
-                    Debug.Log("Found Check at " + squares[i + (j * offset[k])].position + " containing " + piece);
-                    return true;
+                    if (piece.Equals("B") || piece.Equals("Q")) 
+                    {
+                        Debug.Log("Check at " + square.position + " " + squares[i + (j * offset[k])].position + " " + square.piece);
+                        return true;
+                    }
+                    break;
                 }
                 else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Freindly Piece
                 {
                     break;
                 }
             }
+        }
+        return false;
+    }
+
+    private bool KingPawnCheck(Square square, int i )
+    {
+        int[] offset;
+        if (white)
+            offset = new int[] {-7, -9};
+        else
+            offset = new int[] {7, 9};
+
+        foreach (int j in offset)
+        {
+            if (i + j > 63 || i + j < 0) continue;
+            if (squares[i + j].piece.ToUpper().Equals("P") && Char.IsUpper(squares[i + j].piece[0]) == white)
+                return true;
+        }
+        return false;
+    }
+
+    private bool KingKnightCheck(Square square, int i)
+    {
+        int[] offset = Knight.GetOffset(square.position);
+        foreach (int j in offset)
+        {
+            if (i + j > 63 || i + j < 0) continue;
+            if (squares[i + j].piece.ToUpper().Equals("N") && Char.IsUpper(squares[i + j].piece[0]) == white)
+                return true;
         }
         return false;
     }

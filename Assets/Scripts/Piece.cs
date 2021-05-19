@@ -26,12 +26,9 @@ public class Piece : MonoBehaviour
             controllingPiece = false;
             wasControlled = true;
             GameObject closestObjectToMouse = GetNearestSquare();
-            // List<string> moves = new List<string>();
-            float time = Time.realtimeSinceStartup;
             Move[] moves = GameManager.instance.board.GetLegalMoves();
-            Debug.Log("Outside Function: " + (Time.realtimeSinceStartup - time));
 
-            Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>());
+            Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
             bool moveFound = false;
             foreach (Move i in moves)
             {

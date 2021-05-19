@@ -6,10 +6,12 @@ public class Move
 {
     public Square original; 
     public Square newSquare;
-    public Move(Square original, Square newSquare)
+    public int index;
+    public Move(Square original, Square newSquare, int index)
     {
         this.original = original;
         this.newSquare = newSquare;
+        this.index = index;
     }
 
     public string ToString()
