@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    // Start is called before the first frame update
+    // {'P': 10, 'N': 35, 'B': 35, 'R': 52.5, 'Q': 100, 'K': 1000, 'p': -10, 'n': -35, 'b': -35, 'r': -52.5, 'q': -100, 'k': -1000}
     public Square[] squares;    
     public List<Square> squaresList;
     [HideInInspector]
@@ -15,12 +15,38 @@ public class Board : MonoBehaviour
     private int kingIndex;
     private List<Move> legalMoves;
 
+    public bool stalemate;
+
+    public bool checkmate;
+
+    private Dictionary<char, float> pieceVal;
+
+    public float sum;
     void Awake()
     {
-        squares = new Square[64];
+        squares     = new Square[64];
         squaresList = new List<Square>();
-        white = true;
-        legalMoves = new List<Move>();
+        pieceVal    = new Dictionary<char, float>();
+        legalMoves  = new List<Move>();
+        white       = true;
+        stalemate   = false;
+        checkmate   = false;
+        sum         = 0;
+
+        #region Piece Values
+            pieceVal.Add('P', 10.0f);
+            pieceVal.Add('N', 35.0f);
+            pieceVal.Add('B', 35.0f);
+            pieceVal.Add('R', 52.5f);
+            pieceVal.Add('Q', 100.0f);
+            pieceVal.Add('K', 1000000.0f);
+            pieceVal.Add('p', -10.0f);
+            pieceVal.Add('n', -35.0f);
+            pieceVal.Add('b', -35.0f);
+            pieceVal.Add('r', -52.5f);
+            pieceVal.Add('q', -100.0f);
+            pieceVal.Add('k', -1000000.0f);
+        #endregion
     }
 
     public void AddSquare(Square square)
@@ -42,23 +68,24 @@ public class Board : MonoBehaviour
     */
     public void GetPsuedoLegalMoves()
     {
-        
+        sum = 0;
         white = GameManager.instance.white;
 
         legalMoves = new List<Move>();
-
+        
         string pawnPieceToLookFor = (white ? "p" : "P");
         string rookPieceToLookFor = (white ? "r" : "R");
         string knightPieceToLookFor = (white ? "n" : "N");
         string bishopPieceToLookFor = (white ? "b" : "B");
         string kingPieceToLookFor = (white ? "k" : "K");
         string queenPieceToLookFor = (white ? "q" : "Q");
-
+        
         kingIndex = -1;
 
         for (int i = 0; i < squares.Length; i++)
         {
             if (squares[i].piece.Equals("")) continue;
+            AddToSum(squares[i].piece);
             if (squares[i].piece.Equals(pawnPieceToLookFor))
             {
                 GetPawnMoves(squares[i], i);
@@ -95,16 +122,27 @@ public class Board : MonoBehaviour
     public Move[] GetLegalMoves()
     {
         GetPsuedoLegalMoves();
+        // Check if statemate
+        stalemate = (legalMoves.Count == 0);
+        if (stalemate) return legalMoves.ToArray();
+
         int tempKingIndex = kingIndex;
+
         for (int i = 0; i < legalMoves.Count; i++)
         {
+            // Check if the move being checked is a king move, if so
+            // change king index to new square.
             if (legalMoves[i].original.piece.ToUpper().Equals("K"))
             {
                 tempKingIndex = legalMoves[i].index;
             }
+
+            // Check if the move is in a checked position. If so
+            // remove the move from the legal moves list.
             string newOriginalSquare = MakeMove(legalMoves[i]);
             if (IsInCheck(squares[tempKingIndex], tempKingIndex))   
-            {   
+            {
+                // Debug.Log("Found check at " + legalMoves[i].ToString());
                 UnmakeMove(legalMoves[i], newOriginalSquare);
                 legalMoves.RemoveAt(i);
                 i--;
@@ -112,35 +150,36 @@ public class Board : MonoBehaviour
             }
             UnmakeMove(legalMoves[i], newOriginalSquare);
         }
+        
+        if (legalMoves.Count == 0) 
+        {
+            checkmate = true;
+            return legalMoves.ToArray();
+        }
+
         return legalMoves.ToArray();
+    }
+
+    private void AddToSum(string piece)
+    {
+        sum += pieceVal[piece[0]];
     }
 
     private bool IsInCheck(Square square, int i)
     {
-        if (KingDiagnolCheck(square, i) || KingVerticalCheck(square, i) || KingHorizontalCheck(square, i) || KingKnightCheck(square, i) || KingPawnCheck(square, i)) return true;
-        return false;
-
+        return (KingDiagnolCheck(square, i) || KingVerticalCheck(square, i) || KingHorizontalCheck(square, i) || KingKnightCheck(square, i) || KingPawnCheck(square, i));
     }
 
-    private string MakeMove(Move move)
+    public string MakeMove(Move move)
     {
-        // Square original = move.original;
-        // Square newSquare = move.newSquare;
-        // string temp = newSquare.piece;
-        // newSquare.piece = original.piece;
-        // return temp;
         string temp = move.newSquare.piece;
         move.newSquare.piece = move.original.piece;
         move.original.piece = "";
         return temp;
     }
 
-    private void UnmakeMove(Move move, string originalStr)
+    public void UnmakeMove(Move move, string originalStr)
     {
-        // Square original = move.original;
-        // Square newSquare = move.newSquare;
-        // original.piece = newSquare.piece;
-        // newSquare.piece = originalStr;
         move.original.piece = move.newSquare.piece;
         move.newSquare.piece = originalStr;
     }
@@ -158,9 +197,6 @@ public class Board : MonoBehaviour
 
     private void GetPawnMoves(Square square, int i)
     {
-        // Worst code I've ever written. kill me now. literally just a bunch of fucking if statements. IDEFC. Not sure how I would do pawn moves in a clean way.
-        // mult is 1 if searching for black pawn moves, reason:
-        // black pawns move up 8 on 1D chess array whereas white move down 8
         
         int mult = (white ? -1 : 1);
         if (white
@@ -262,7 +298,7 @@ public class Board : MonoBehaviour
                 {
                     legalMoves.Add(new Move(square, squares[index], index));
                 }
-                else if (Char.IsUpper(squares[index].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
+                else if (Char.IsUpper(squares[index].piece[0]) == white) // Square ContainsKey enemy piece, piece can be taken then break 
                 {
                     legalMoves.Add(new Move(square, squares[index], index));
                     break;
@@ -362,8 +398,11 @@ public class Board : MonoBehaviour
                 if (squares[index].piece.Equals("")) continue;
 
                 string piece = ("" + squares[index].piece[0] + "").ToUpper();
-
-                if (squares[index].position[0] == 'h')
+                if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) != white) // Freindly Piece
+                {
+                    break;
+                }
+                else if (squares[index].position[0] == 'h')
                 {
                     if (Char.IsUpper(squares[index].piece[0]) == white && piece.Equals("Q") || piece.Equals("R"))
                     {
@@ -371,17 +410,13 @@ public class Board : MonoBehaviour
                         return true;
                     }
                 }
-                else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) == white) // Square contains enemy piece, piece can be taken then break 
+                else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) == white) // Square ContainsKey enemy piece, piece can be taken then break 
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
                         Debug.Log("Found Check at " + squares[index].position);
                         return true;
                     }
-                    break;
-                }
-                else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) != white) // Freindly Piece
-                {
                     break;
                 }
             }
@@ -404,17 +439,17 @@ public class Board : MonoBehaviour
 
                 string piece = ("" + squares[i + (j * offset[k])].piece[0]).ToUpper();
 
-                if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
+                if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Friendly Piece
+                {
+                    break;
+                }
+                else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
                         Debug.Log("Found Check at " + squares[i + (j * offset[k]) ].position);
                         return true;
                     }
-                    break;
-                }
-                else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Friendly Piece
-                {
                     break;
                 }
             }
@@ -447,17 +482,16 @@ public class Board : MonoBehaviour
                 if (squares[i + (j * offset[k])].piece.Equals("")) continue;
                 string piece = ("" + squares[i + (j * offset[k])].piece).ToUpper();
 
-                if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
+                if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Freindly Piece
+                {
+                    break;
+                }
+                else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Enemy Piece
                 {
                     if (piece.Equals("B") || piece.Equals("Q")) 
                     {
-                        Debug.Log("Check at " + square.position + " " + squares[i + (j * offset[k])].position + " " + square.piece);
                         return true;
                     }
-                    break;
-                }
-                else if (!squares[i + (j * offset[k])].piece.Equals("") && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Freindly Piece
-                {
                     break;
                 }
             }
@@ -477,7 +511,10 @@ public class Board : MonoBehaviour
         {
             if (i + j > 63 || i + j < 0) continue;
             if (squares[i + j].piece.ToUpper().Equals("P") && Char.IsUpper(squares[i + j].piece[0]) == white)
+            {
+                // Debug.Log("Found pawn check at " + square.position + squares[i + j].position);
                 return true;
+            }
         }
         return false;
     }

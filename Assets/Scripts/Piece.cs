@@ -52,6 +52,16 @@ public class Piece : MonoBehaviour
             {
                 transform.position = originalSquare.gameObject.transform.position;
             }
+            else
+            {
+                GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
+                Move computerMove = GameManager.instance.computer.Search(4, 4, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
+                computerMove.original.pieceObj.transform.position = computerMove.newSquare.transform.position;
+                Destroy(computerMove.newSquare.pieceObj);
+                computerMove.original.piece = "";
+                GameManager.instance.board.MakeMove(computerMove);
+                GameManager.instance.white = !GameManager.instance.white;
+            }
         }
         else if (controllingThisPiece)
         {
