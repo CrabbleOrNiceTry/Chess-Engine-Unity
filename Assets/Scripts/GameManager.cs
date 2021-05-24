@@ -21,15 +21,4 @@ public class GameManager : MonoBehaviour
         board = FindObjectOfType<Board>();
         computer = new AI();
     }
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

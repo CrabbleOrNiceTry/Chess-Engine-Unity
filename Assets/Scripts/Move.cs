@@ -18,4 +18,9 @@ public class Move
     {
         return original.position + newSquare.position;
     }
+
+    public bool Equals(Move other)
+    {
+        return this.ToString().Equals(other.ToString());
+    }
 }

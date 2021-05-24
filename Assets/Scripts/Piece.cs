@@ -16,6 +16,7 @@ public class Piece : MonoBehaviour
     {
         controllingPiece = false;
         wasControlled = false;
+        piece = "";
     }
 
     void Update()
@@ -54,12 +55,27 @@ public class Piece : MonoBehaviour
             }
             else
             {
+                // Initialize some values
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
-                Move computerMove = GameManager.instance.computer.Search(4, 4, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
-                computerMove.original.pieceObj.transform.position = computerMove.newSquare.transform.position;
-                Destroy(computerMove.newSquare.pieceObj);
-                computerMove.original.piece = "";
+
+                // Search for the best move 
+                Move computerMove = GameManager.instance.computer.Search(3, 3, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
+                Debug.Log(computerMove.ToString());
+
+
+                // Change the position of the original object to where it should be after the move
+                computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z);
+                
+                // Destroy the piece that is being taken if present.
+                if (!computerMove.newSquare.piece.Equals(""))
+                    Destroy(computerMove.newSquare.pieceObj);
+                
+                computerMove.newSquare.pieceObj = computerMove.original.pieceObj;
+
+                // Make the move on the board array
                 GameManager.instance.board.MakeMove(computerMove);
+                
+                // Change the next player to move
                 GameManager.instance.white = !GameManager.instance.white;
             }
         }

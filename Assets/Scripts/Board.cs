@@ -21,6 +21,7 @@ public class Board : MonoBehaviour
 
     private Dictionary<char, float> pieceVal;
 
+
     public float sum;
     void Awake()
     {
@@ -45,7 +46,7 @@ public class Board : MonoBehaviour
             pieceVal.Add('b', -35.0f);
             pieceVal.Add('r', -52.5f);
             pieceVal.Add('q', -100.0f);
-            pieceVal.Add('k', -1000000.0f);
+            pieceVal.Add('k', -100000.0f);
         #endregion
     }
 
@@ -59,6 +60,15 @@ public class Board : MonoBehaviour
         squares = squaresList.ToArray();
     }
 
+    public int GetIndex(string position)
+    {
+        int file = (int)position[0];
+        int rank = (int)(position[1] - '0');
+        //( 8 - rank ) * 8
+        // file - 97
+        // (( 8 - rank ) * 8) + (file - 97)
+        return (( 8 - rank ) * 8) + (file - 97);
+    }
 
     /*
      * Returns a set of psuedo legal moves in string form such as e2e4
@@ -85,7 +95,6 @@ public class Board : MonoBehaviour
         for (int i = 0; i < squares.Length; i++)
         {
             if (squares[i].piece.Equals("")) continue;
-            AddToSum(squares[i].piece);
             if (squares[i].piece.Equals(pawnPieceToLookFor))
             {
                 GetPawnMoves(squares[i], i);
@@ -172,7 +181,8 @@ public class Board : MonoBehaviour
 
     public string MakeMove(Move move)
     {
-        string temp = move.newSquare.piece;
+        string temp = "";
+        temp = move.newSquare.piece;
         move.newSquare.piece = move.original.piece;
         move.original.piece = "";
         return temp;
@@ -343,16 +353,22 @@ public class Board : MonoBehaviour
     private bool GetDiagnolMoves(Square square, int i)
     {
         int[] offset;
+        bool stopAtH = false;
+        bool stopAtA = false; 
         if (square.position[0] == 'a')
         {
+            stopAtH = true;
             offset = new int[]{9, -7};
         }
         else if (square.position[0] == 'h')
         {
+            stopAtA = true;
             offset = new int[]{7, -9};  
         }
         else
         {
+            stopAtA = true;
+            stopAtH = true;
             offset = new int[]{9, -9, 7, -7};
         }
         
@@ -377,6 +393,12 @@ public class Board : MonoBehaviour
                 {
                     break;
                 }
+
+                if (stopAtA && squares[index].position[0] == 'a')
+                    break;
+                else if (stopAtH && squares[index].position[0] == 'h')
+                    break;
+
             }
         }
         return true;
@@ -447,7 +469,6 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
-                        Debug.Log("Found Check at " + squares[i + (j * offset[k]) ].position);
                         return true;
                     }
                     break;
