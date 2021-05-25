@@ -50,6 +50,7 @@
      <Compile Include="Assets\Scripts\PieceIndex.cs" />
      <Compile Include="Assets\Scripts\Square.cs" />
      <Compile Include="Assets\Scripts\Board.cs" />
+     <Compile Include="Assets\Scripts\Move.cs" />
      <Compile Include="Assets\Scripts\PythonBoard.cs" />
      <Compile Include="Assets\Scripts\Piece Scripts\King.cs" />
      <Compile Include="Assets\Scripts\Piece Scripts\Knight.cs" />
@@ -59,7 +60,6 @@
      <Compile Include="Assets\Scripts\Piece.cs" />
      <Compile Include="Assets\Scripts\Piece Scripts\Rook.cs" />
      <Compile Include="Assets\Scripts\InitializeBoard.cs" />
-     <Compile Include="Assets\Scripts\Move.cs" />
  <Reference Include="UnityEngine">
  <HintPath>/home/cbac/Unity/Hub/Editor/2020.3.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>

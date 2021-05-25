@@ -17,13 +17,13 @@ public class King : MonoBehaviour
         // Bottom right Corner
         else if (square.position[0] == 'h' && square.position[1] == '1')
         {
-            return new int[] {-1, 7, -8};
+            return new int[] {-1, -9, -8};
             
         }
         // Upper left Corner
         else if (square.position[0] == 'a' && square.position[1] == '8')
         {
-            return new int[] {1, 8, 9};
+            return new int[] {-1, 8, 9};
         }
         // Upper right Corner
         else if (square.position[0] == 'h' && square.position[1] == '8')
@@ -41,7 +41,7 @@ public class King : MonoBehaviour
             return new int[] {1, -1, 8, 9, 7};
         }
         // On left side
-        else if (square.position[0] == 'h')
+        else if (square.position[0] == 'a')
         {
             return new int[] {1, 8, -8, -7, 7};
         }

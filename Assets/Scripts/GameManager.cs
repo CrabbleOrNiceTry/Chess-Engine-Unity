@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public Board board;    
     public bool white;
+    public AI computer;
     // Squares will be stored in an array for faster traversing than a list.
 
     
@@ -18,16 +19,6 @@ public class GameManager : MonoBehaviour
         instance = this;
         white = true;
         board = FindObjectOfType<Board>();
-    }
-
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        computer = new AI();
     }
 }
