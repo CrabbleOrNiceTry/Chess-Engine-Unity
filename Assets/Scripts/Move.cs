@@ -15,8 +15,8 @@ public class Move
         this.original = original;
         this.newSquare = newSquare;
         this.index = index;
-        pieceOriginal = original.piece;
-        pieceNew = newSquare.piece;
+        pieceOriginal = "" + original.piece;
+        pieceNew = "" + newSquare.piece;
         pawnPromote = false;
     }
 

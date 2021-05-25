@@ -20,6 +20,7 @@ public class Board : MonoBehaviour
     public bool checkmate;
 
     private Dictionary<char, float> pieceVal;
+    public HashSet<int> pieceIndex;
 
 
     public float sum;
@@ -28,12 +29,11 @@ public class Board : MonoBehaviour
         squares     = new Square[64];
         squaresList = new List<Square>();
         pieceVal    = new Dictionary<char, float>();
+        pieceIndex  = new HashSet<int>();
         legalMoves  = new List<Move>();
         white       = true;
         stalemate   = false;
         checkmate   = false;
-        sum         = 0;
-
         #region Piece Values
             pieceVal.Add('P', 10.0f);
             pieceVal.Add('N', 35.0f);
@@ -50,6 +50,12 @@ public class Board : MonoBehaviour
         #endregion
     }
 
+    void Start()
+    {
+        GetPsuedoLegalMoves();
+    }
+
+
     public void AddSquare(Square square)
     {
         squaresList.Add(square);
@@ -62,12 +68,7 @@ public class Board : MonoBehaviour
 
     public int GetIndex(string position)
     {
-        int file = (int)position[0];
-        int rank = (int)(position[1] - '0');
-        //( 8 - rank ) * 8
-        // file - 97
-        // (( 8 - rank ) * 8) + (file - 97)
-        return (( 8 - rank ) * 8) + (file - 97);
+        return ((( 8 - ((int)(position[1] - '0'))) * 8) + ((int)position[0] - 97));
     }
 
     /*
@@ -78,7 +79,7 @@ public class Board : MonoBehaviour
     */
     public void GetPsuedoLegalMoves()
     {
-        sum = 0;
+        pieceIndex.Clear();
         white = GameManager.instance.white;
 
         legalMoves = new List<Move>();
@@ -95,6 +96,7 @@ public class Board : MonoBehaviour
         for (int i = 0; i < squares.Length; i++)
         {
             if (squares[i].piece.Equals("")) continue;
+            pieceIndex.Add(i);
             if (squares[i].piece.Equals(pawnPieceToLookFor))
             {
                 GetPawnMoves(squares[i], i);
@@ -120,6 +122,7 @@ public class Board : MonoBehaviour
                 kingIndex = i;
                 GetKingMoves(squares[i], i);
             }
+
         }
     }
 
@@ -148,22 +151,29 @@ public class Board : MonoBehaviour
 
             // Check if the move is in a checked position. If so
             // remove the move from the legal moves list.
-            string newOriginalSquare = MakeMove(legalMoves[i]);
-            if (IsInCheck(squares[tempKingIndex], tempKingIndex))   
+            if (!legalMoves[i].original.piece.ToUpper().Equals("K") && legalMoves[i].newSquare.position.Equals(squares[tempKingIndex].position))
             {
-                // Debug.Log("Found check at " + legalMoves[i].ToString());
-                UnmakeMove(legalMoves[i], newOriginalSquare);
                 legalMoves.RemoveAt(i);
                 i--;
                 continue;
             }
-            UnmakeMove(legalMoves[i], newOriginalSquare);
+            MakeMove(legalMoves[i]);
+            if (IsInCheck(squares[tempKingIndex], tempKingIndex))   
+            {
+                // Debug.Log("Found check at " + legalMoves[i].ToString());
+                UnmakeMove(legalMoves[i]);
+                legalMoves.RemoveAt(i);
+                i--;
+                continue;
+            }
+            UnmakeMove(legalMoves[i]);
         }
         
+        // After parsing all illegal moves there were no possible moves for player
+        // meaning he is in check and that means mate.
         if (legalMoves.Count == 0) 
         {
             checkmate = true;
-            return legalMoves.ToArray();
         }
 
         return legalMoves.ToArray();
@@ -179,12 +189,9 @@ public class Board : MonoBehaviour
         return (KingDiagnolCheck(square, i) || KingVerticalCheck(square, i) || KingHorizontalCheck(square, i) || KingKnightCheck(square, i) || KingPawnCheck(square, i));
     }
 
-    public string MakeMove(Move move)
+    public void MakeMove(Move move)
     {
-        string temp = "";
-        temp = move.newSquare.piece;
-        // move.original.pieceObj.GetComponent<Piece>().currentIndex = move.newSquare.pieceObj.GetComponent<Piece>().currentIndex;
-        // Support pawn promotion
+        
         if (move.original.piece.ToUpper().Equals("P"))
         {
             if (move.newSquare.position[1] == '8' || move.newSquare.position[1] == '1')
@@ -194,38 +201,48 @@ public class Board : MonoBehaviour
                 else
                     move.newSquare.piece = "Q";
                 move.original.piece = "";
-                temp += "+";
+                // temp += "+";
                 move.pawnPromote = true;
-                return temp;
+                GameManager.instance.white = !GameManager.instance.white;
+                return;
             }
         }
         move.newSquare.piece = move.original.piece;   
         move.original.piece = "";
-        return temp;
+        GameManager.instance.white = !GameManager.instance.white;
+        // return temp;
     }
 
-    public void UnmakeMove(Move move, string originalStr)
+    public void UnmakeMove(Move move)
     {
-        if (!originalStr.Equals("") && originalStr[originalStr.Length -1] == '+')
+        if (move.pawnPromote)
         {
-            if (Char.IsLower(move.newSquare.piece, 0))
+            try 
             {
-                move.original.piece = "p";
+                if (Char.IsLower(move.newSquare.piece, 0))
+                {
+                    move.original.piece = "p";
+                }
+                else
+                {
+                    move.original.piece = "P";     
+                }
+                move.newSquare.piece = move.pieceNew;
+                move.pawnPromote = false;
             }
-            else
+            catch
             {
-                move.original.piece = "P";     
+                Debug.Log(move.ToString());
+                throw;
             }
-            if (originalStr[0] == '+')
-                move.newSquare.piece = "";
-            else
-                move.newSquare.piece = originalStr.Substring(0, 1);
+            
         }
         else
         {
-            move.original.piece = move.newSquare.piece;
-            move.newSquare.piece = originalStr;
+            move.original.piece = move.pieceOriginal;
+            move.newSquare.piece = move.pieceNew;
         }
+        GameManager.instance.white = !GameManager.instance.white;
     }
 
     private void GetKingMoves(Square square, int i)
@@ -339,7 +356,7 @@ public class Board : MonoBehaviour
 
                 if (index < 0 || index > 63) break;
 
-                if (squares[index].position[0] == 'h')
+                if (squares[index].position[0] == 'h' || squares[index].position[0] == 'a')
                 {
                     if (squares[index].piece.Equals("") || Char.IsUpper(squares[index].piece[0]) == white)
                     {
@@ -471,7 +488,6 @@ public class Board : MonoBehaviour
                 {
                     if (Char.IsUpper(squares[index].piece[0]) == white && piece.Equals("Q") || piece.Equals("R"))
                     {
-                        Debug.Log("Found Check at " + squares[index].position);
                         return true;
                     }
                 }

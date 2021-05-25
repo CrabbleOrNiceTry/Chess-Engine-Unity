@@ -112,7 +112,7 @@ public class InitializeBoard : MonoBehaviour
                 texture.Apply();
                 // Sprite sprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0, 0), 1.0f);
 
-                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, 0f), Quaternion.identity,canvas);
+                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -0.2f), Quaternion.identity,canvas);
                 pieceSprite.GetComponent<Piece>().piece = "" + fen[fenCount];
                 pieceSprite.GetComponent<Piece>().currentIndex = pieceCount;
                 GameManager.instance.board.squaresList[pieceCount].pieceObj = pieceSprite;

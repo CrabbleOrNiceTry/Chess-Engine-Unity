@@ -10,8 +10,13 @@ public class AI : MonoBehaviour
 
     private Move throwAwayMove;
 
+    private Move bestMove;
+
     private Dictionary<char, float> pieceVal;
     private Dictionary<char, float[]> positionalVal;
+    private float infinity;
+
+    private bool originalWhite;
 
     public AI()
     {
@@ -135,115 +140,127 @@ public class AI : MonoBehaviour
     {
         this.board = board;
         // This exists only to satisfy the tuple return
+        bestMove = new Move(this.board.squares[1], this.board.squares[26], 0);
         throwAwayMove = new Move(this.board.squares[1], this.board.squares[26], 0);
+        infinity = 999999f;
+        originalWhite = GameManager.instance.white;
     }
 
-    public (Move, float) Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
+    public float Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
     {
         Move[] legalMoves = board.GetLegalMoves();
+        
         if (depth == 0 || legalMoves.Length == 0)
         {
+            HashSet<int> pieceIndex = new HashSet<int>();
+            pieceIndex = board.pieceIndex;
             if (color == "WHITE")
             {
                 if (board.checkmate)
                 {
                     Debug.Log("Found Mate");
                     if (player)
-                        return (throwAwayMove, Mathf.Infinity);
+                        return infinity;
                     else
-                        return (throwAwayMove, -Mathf.Infinity);
+                        return -infinity;
                 }
                 else if (board.stalemate)
-                    return (throwAwayMove, 0);
-                return (throwAwayMove, CalculatePos(legalMoves));
+                    return 0;
+                return -CalculatePos(legalMoves, pieceIndex);
             }
             else if (color == "BLACK")
             {
                 if (board.checkmate)
                 {
-                    Debug.Log("Found Mate");
                     if (player)
-                        return (throwAwayMove, -Mathf.Infinity);
+                        return -infinity;
                     else 
-                        return (throwAwayMove, Mathf.Infinity);
+                        return infinity;
                 }
                 else if (board.stalemate)
-                    return (throwAwayMove, 0);
-                return (throwAwayMove, CalculatePos(legalMoves));
+                    return 0;
+                return CalculatePos(legalMoves, pieceIndex);
             }
         }
 
-        Move bestMove = new Move(this.board.squares[1], this.board.squares[26], 0);
+        Move currentBestMove = new Move(this.board.squares[1], this.board.squares[26], 0);
         if (player)
         {
-            float max = -Mathf.Infinity;
-            float bestValueMove = -Mathf.Infinity;
+            float max = -infinity;
+            float bestValueMove = -infinity;
             foreach (Move move in legalMoves)
             {
                 // Make the move
-                string temp = board.MakeMove(move);
+                board.MakeMove(move);
 
                 // Recursively check next moves in line
-                float currentEval = Search(depth -1, originalDepth, false, color, alpha, beta).Item2;
-                board.UnmakeMove(move, temp);
+                float currentEval = Search(depth -1, originalDepth, false, color, alpha, beta);
+                board.UnmakeMove(move);
                 max = Mathf.Max(max, currentEval);
 
                 alpha = Mathf.Max(alpha, max);
 
-                if (alpha >= beta && max != Mathf.Infinity)
+                if (alpha >= beta && max != infinity)
                     break;
 
                 if (max > bestValueMove)
                 {
                     bestValueMove = max;
-                    bestMove = move;
+                    currentBestMove = move;
                 }
             }
-            if (depth < originalDepth) return (throwAwayMove, max);
+            if (depth < originalDepth) return max;
         }
         else
         {
-            float min = Mathf.Infinity;
-            float bestValueMove = Mathf.Infinity;
+            float min = infinity;
+            float bestValueMove = infinity;
             foreach (Move move in legalMoves)
             {
                 // Make the move
-                string temp = board.MakeMove(move);
+                board.MakeMove(move);
 
                 // Recursively check next moves in line
-                float currentEval = Search(depth -1, originalDepth, true, color, alpha, beta).Item2;
-                board.UnmakeMove(move, temp);
+                float currentEval = Search(depth -1, originalDepth, true, color, alpha, beta);
+                board.UnmakeMove(move);
 
                 min = Mathf.Min(min, currentEval);
 
                 beta = Mathf.Min(beta, min);
 
-                if (beta <= alpha && min != Mathf.Infinity)
+                if (beta <= alpha && min != infinity)
                     break;
                 
                 if (min < bestValueMove)
                 {
                     bestValueMove = min;
-                    bestMove = move;
+                    currentBestMove = move;
                 }
             }
-            if (depth < originalDepth) return (throwAwayMove, min);
+            if (depth < originalDepth) return min;
         }
-        if (bestMove.Equals(throwAwayMove))
-        {
-            Debug.Log("Something went Wrong");
-            return (legalMoves[0], 0f);
-        }
-        Debug.Log(CalculatePos(legalMoves));
-        return (bestMove, 0f);
+        // if (bestMove.Equals(throwAwayMove))
+        // {
+        //     Debug.Log("Something went Wrong");
+        //     return (legalMoves[0], 0f);
+        // }
+        // Debug.Log(CalculatePos(legalMoves, pieceIndex));
+        bestMove = currentBestMove;
+        GameManager.instance.white = originalWhite;
+        return 0f;
     }
 
-    public float CalculatePos(Move[] legalMoves)
+    public Move GetBestMove(int depth, int originalDepth, bool player, string color, float alpha, float beta)
+    {
+        Search(depth, originalDepth, player, color, alpha, beta);
+        return bestMove;
+    }   
+
+    public float CalculatePos(Move[] legalMoves, HashSet<int> pieceIndex)
     {
         float sum = 0;
-        for (int i = 0; i < board.squares.Length; i++)
+        foreach (int i in pieceIndex)
         {
-            if (board.squares[i].piece.Equals("")) continue;
             sum += pieceVal[board.squares[i].piece[0]];
             sum += positionalVal[board.squares[i].piece[0]][board.GetIndex(board.squares[i].position)];
         }

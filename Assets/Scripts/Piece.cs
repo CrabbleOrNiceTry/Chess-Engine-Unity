@@ -64,7 +64,7 @@ public class Piece : MonoBehaviour
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
 
                 // Search for the best move 
-                Move computerMove = GameManager.instance.computer.Search(depth, depth, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
+                Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -Mathf.Infinity, Mathf.Infinity);
                 Debug.Log(computerMove.ToString());
 
 
@@ -85,7 +85,6 @@ public class Piece : MonoBehaviour
                     PromotePawn(computerMove.newSquare.pieceObj, computerMove.newSquare.gameObject, GameManager.instance.white);
 
                 // Change the next player to move
-                GameManager.instance.white = !GameManager.instance.white;
             }
         }
         else if (controllingThisPiece)
@@ -111,7 +110,7 @@ public class Piece : MonoBehaviour
 
     private GameObject GetNearestSquare()
     {
-        GameObject closestObjectToMouse = GameManager.instance.board.squares[0].gameObject;
+        GameObject closestObjectToMouse = (GameObject)Instantiate(GameManager.instance.board.squares[0].gameObject);
         float closestDistance = 10000f;
         for (int i = 0; i < GameManager.instance.board.squares.Length; i++)
         {
