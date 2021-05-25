@@ -164,6 +164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   board: {fileID: 0}
   white: 0
+  computer: {fileID: 0}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -287,6 +288,9 @@ MonoBehaviour:
   squaresList: []
   fen: 
   white: 0
+  stalemate: 0
+  checkmate: 0
+  sum: 0
 --- !u!1 &1120028242
 GameObject:
   m_ObjectHideFlags: 0

@@ -40,13 +40,13 @@ public class Board : MonoBehaviour
             pieceVal.Add('B', 35.0f);
             pieceVal.Add('R', 52.5f);
             pieceVal.Add('Q', 100.0f);
-            pieceVal.Add('K', 1000000.0f);
+            pieceVal.Add('K', 1000.0f);
             pieceVal.Add('p', -10.0f);
             pieceVal.Add('n', -35.0f);
             pieceVal.Add('b', -35.0f);
             pieceVal.Add('r', -52.5f);
             pieceVal.Add('q', -100.0f);
-            pieceVal.Add('k', -100000.0f);
+            pieceVal.Add('k', -1000.0f);
         #endregion
     }
 
@@ -183,15 +183,49 @@ public class Board : MonoBehaviour
     {
         string temp = "";
         temp = move.newSquare.piece;
-        move.newSquare.piece = move.original.piece;
+        // move.original.pieceObj.GetComponent<Piece>().currentIndex = move.newSquare.pieceObj.GetComponent<Piece>().currentIndex;
+        // Support pawn promotion
+        if (move.original.piece.ToUpper().Equals("P"))
+        {
+            if (move.newSquare.position[1] == '8' || move.newSquare.position[1] == '1')
+            {
+                if (Char.IsLower(move.original.piece, 0))
+                    move.newSquare.piece = "q";
+                else
+                    move.newSquare.piece = "Q";
+                move.original.piece = "";
+                temp += "+";
+                move.pawnPromote = true;
+                return temp;
+            }
+        }
+        move.newSquare.piece = move.original.piece;   
         move.original.piece = "";
         return temp;
     }
 
     public void UnmakeMove(Move move, string originalStr)
     {
-        move.original.piece = move.newSquare.piece;
-        move.newSquare.piece = originalStr;
+        if (!originalStr.Equals("") && originalStr[originalStr.Length -1] == '+')
+        {
+            if (Char.IsLower(move.newSquare.piece, 0))
+            {
+                move.original.piece = "p";
+            }
+            else
+            {
+                move.original.piece = "P";     
+            }
+            if (originalStr[0] == '+')
+                move.newSquare.piece = "";
+            else
+                move.newSquare.piece = originalStr.Substring(0, 1);
+        }
+        else
+        {
+            move.original.piece = move.newSquare.piece;
+            move.newSquare.piece = originalStr;
+        }
     }
 
     private void GetKingMoves(Square square, int i)
@@ -209,6 +243,15 @@ public class Board : MonoBehaviour
     {
         
         int mult = (white ? -1 : 1);
+        if (square.position[1] == '8' || square.position[1] == '1')
+        {  
+            if (Char.IsLower(square.piece, 0))
+                square.piece = "q";
+            else
+                square.piece = "Q";
+            GetQueenMoves(square, i);
+            return;
+        }
         if (white
             && square.position[1] == '2'
             && squares[i + (16 * mult)].piece.Equals(""))
@@ -436,7 +479,6 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
-                        Debug.Log("Found Check at " + squares[index].position);
                         return true;
                     }
                     break;

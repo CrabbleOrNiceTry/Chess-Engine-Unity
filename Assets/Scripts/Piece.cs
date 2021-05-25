@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.IO;
 
 public class Piece : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class Piece : MonoBehaviour
     private Square originalSquare;
     public bool wasControlled;
     public string piece;
+
+    // Current index on 64 integer array board.
+    public int currentIndex;
 
     void Start()
     {
@@ -55,11 +59,12 @@ public class Piece : MonoBehaviour
             }
             else
             {
+                int depth = 3;
                 // Initialize some values
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
 
                 // Search for the best move 
-                Move computerMove = GameManager.instance.computer.Search(3, 3, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
+                Move computerMove = GameManager.instance.computer.Search(depth, depth, true, "BLACK", -Mathf.Infinity, Mathf.Infinity).Item1;
                 Debug.Log(computerMove.ToString());
 
 
@@ -75,6 +80,10 @@ public class Piece : MonoBehaviour
                 // Make the move on the board array
                 GameManager.instance.board.MakeMove(computerMove);
                 
+                // Check pawn promotion
+                if (computerMove.pawnPromote)
+                    PromotePawn(computerMove.newSquare.pieceObj, computerMove.newSquare.gameObject, GameManager.instance.white);
+
                 // Change the next player to move
                 GameManager.instance.white = !GameManager.instance.white;
             }
@@ -84,6 +93,20 @@ public class Piece : MonoBehaviour
             transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f));
             transform.position = new Vector3(transform.position.x, transform.position.y, 0f);
         }
+    }
+
+    // Only promotes to queen. :( no way Im doing anything else lmao. Maybe in the futre.
+    private void PromotePawn(GameObject square, GameObject square2, bool white)
+    {
+        byte[] bytes = File.ReadAllBytes("./Assets/Resources/Pieces/" + ((!white) ? "Black Pieces/" : "White Pieces/") + ((!white) ? "Q" : "q") + ".png");
+        float size = square2.transform.localScale.x / square2.GetComponent<SpriteRenderer>().sprite.bounds.size.x;
+        Texture2D texture = new Texture2D((int)size, (int)size, TextureFormat.RGB24, false);
+        texture.filterMode = FilterMode.Trilinear;
+        texture.LoadImage(bytes);
+        texture.Apply();
+
+        square.GetComponent<UnityEngine.UI.RawImage>().texture = texture;
+
     }
 
     private GameObject GetNearestSquare()
