@@ -35,7 +35,7 @@ public class InitializeBoard : MonoBehaviour
         float yPos = originaly;
         Color colorForSquare = whiteColor;
         string fen = "" + fenPerm;                              
-        int fenCount = fen.Length - 1;                                                                                  
+        int fenCount = 0;                                                                                  
         // For some reason I have to initialize, color, and render each thing separetly.
         // Initialize each square
         for (int i = 0; i < 8; i++)
@@ -50,7 +50,7 @@ public class InitializeBoard : MonoBehaviour
                     f--;
                     string strF = "" + f;
                     fen = fen.Substring(0, fenCount) + strF + fen.Substring(fenCount + 1, fen.Length - (fenCount + 1));
-                    if (f <= 0) {fenCount--;}
+                    if (f <= 0) {fenCount++;}
                     noPiece = true;
                     noFenSub = true;
                 }
@@ -62,7 +62,7 @@ public class InitializeBoard : MonoBehaviour
                 GameManager.instance.board.squaresList.Add(temp.GetComponent<Square>());
                 xPos += size;
                 if (!noFenSub)
-                    fenCount--;
+                    fenCount++;
                 
             }
             xPos = originalX;
@@ -87,7 +87,7 @@ public class InitializeBoard : MonoBehaviour
         xPos = originalX;
         yPos = originaly;
         fen = "" + fenPerm;
-        fenCount = fen.Length - 1;
+        fenCount = 0;
         int pieceCount = 0;
         for (int i = 0; i < 8; i++)
         {
@@ -99,25 +99,25 @@ public class InitializeBoard : MonoBehaviour
                     f--;
                     string strF = "" + f;
                     fen = fen.Substring(0, fenCount) + strF + fen.Substring(fenCount + 1, fen.Length - (fenCount + 1));
-                    if (f <= 0) {fenCount--;}
+                    if (f <= 0) {fenCount++;}
                     xPos += size;
                     pieceCount++;
                     continue;
                 }
                 // Debug.Log(fen[fenCount]);
-                byte[] bytes = File.ReadAllBytes("./Assets/Resources/Pieces/" + (Char.IsUpper(fen[fenCount]) ? "Black Pieces/" : "White Pieces/") + fen[fenCount] + ".png");
+                byte[] bytes = File.ReadAllBytes("./Assets/Resources/Pieces/" + (Char.IsUpper(fen[fenCount]) ? "White Pieces/" : "Black Pieces/") + fen[fenCount] + ".png");
                 Texture2D texture = new Texture2D((int)size, (int)size, TextureFormat.RGB24, false);
                 texture.filterMode = FilterMode.Trilinear;
                 texture.LoadImage(bytes);
                 texture.Apply();
                 // Sprite sprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0, 0), 1.0f);
 
-                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -0.2f), Quaternion.identity,canvas);
+                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -1f), Quaternion.identity,canvas);
                 pieceSprite.GetComponent<Piece>().piece = "" + fen[fenCount];
                 pieceSprite.GetComponent<Piece>().currentIndex = pieceCount;
                 GameManager.instance.board.squaresList[pieceCount].pieceObj = pieceSprite;
                 pieceSprite.GetComponent<UnityEngine.UI.RawImage>().texture = texture;
-                fenCount--;
+                fenCount++;
                 xPos += size;
                 pieceCount++;
             }

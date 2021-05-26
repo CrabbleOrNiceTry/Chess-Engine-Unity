@@ -9,7 +9,6 @@ public class Square : MonoBehaviour
     public string position;
     public string piece;
     public GameObject pieceObj;
-    public Piece pieceClass;
     public bool isPinned;
     // public int piecePinning;
 
@@ -17,7 +16,6 @@ public class Square : MonoBehaviour
     {
         piece = "";
         isPinned = false;
-        // piecePinning = "";
     }
 
     public void SetPosition(string position)
