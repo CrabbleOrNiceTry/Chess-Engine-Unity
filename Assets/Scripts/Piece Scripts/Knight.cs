@@ -19,11 +19,11 @@ public class Knight : MonoBehaviour
         }
         else if (pos[0] == 'h')
         {
-            return new int[]{-15, 15, 6, -6, 10, -10};
+            return new int[]{-17, 6, 15, -10};
         }
         else if (pos[0] == 'a')
         {
-            return new int[]{-17, 17, 6, -6, 10, -10};
+            return new int[]{-15, 17, 10, -6};
         }
         else
         {

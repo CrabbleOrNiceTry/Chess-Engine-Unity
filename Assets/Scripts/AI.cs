@@ -16,10 +16,10 @@ public class AI : MonoBehaviour
     private Dictionary<char, float[]> positionalVal;
     private float infinity;
 
-    private bool originalWhite;
 
     public AI()
     {
+        infinity = 999999f;
         pieceVal = new Dictionary<char, float>();
         positionalVal = new Dictionary<char, float[]>();
         #region Piece Values
@@ -38,7 +38,7 @@ public class AI : MonoBehaviour
         #endregion
 
         #region Positional Piece Values
-            positionalVal.Add('p', new float[] {0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+            positionalVal.Add('P', new float[] {0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,
                                             5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,
                                             1.0f,  1.0f,  2.0f,  3.0f,  3.0f,  2.0f,  1.0f,  1.0f,
                                             0.5f,  0.5f,  1.0f,  2.5f,  2.5f,  1.0f,  0.5f,  0.5f,
@@ -46,7 +46,7 @@ public class AI : MonoBehaviour
                                             0.5f, -0.5f, -1.0f,  0.0f,  0.0f, -1.0f, -0.5f,  0.5f,
                                             0.5f,  1.0f, 1.0f,  -2.0f, -2.0f,  1.0f,  1.0f,  0.5f,
                                             0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f});
-            positionalVal.Add('n', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
+            positionalVal.Add('N', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
                                             -4.0f, -2.0f,  0.0f,  0.0f,  0.0f,  0.0f, -2.0f, -4.0f,
                                             -3.0f,  0.0f,  1.0f,  1.5f,  1.5f,  1.0f,  0.0f, -3.0f,
                                             -3.0f,  0.5f,  1.5f,  2.0f,  2.0f,  1.5f,  0.5f, -3.0f,
@@ -54,7 +54,7 @@ public class AI : MonoBehaviour
                                             -3.0f,  0.5f,  1.0f,  1.5f,  1.5f,  1.0f,  0.5f, -3.0f,
                                             -4.0f, -2.0f,  0.0f,  0.5f,  0.5f,  0.0f, -2.0f, -4.0f,
                                             -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f });
-            positionalVal.Add('b', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
+            positionalVal.Add('B', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
                                         -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  1.0f,  1.0f,  0.5f,  0.0f, -1.0f,
                                             -1.0f,  0.5f,  0.5f,  1.0f,  1.0f,  0.5f,  0.5f, -1.0f,
@@ -62,7 +62,7 @@ public class AI : MonoBehaviour
                                             -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f,
                                             -1.0f,  0.5f,  0.0f,  0.0f,  0.0f,  0.0f,  0.5f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f });
-            positionalVal.Add('r', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  0.0f,
+            positionalVal.Add('R', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  0.0f,
                                              0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,  0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
@@ -70,7 +70,7 @@ public class AI : MonoBehaviour
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                              0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f,  0.0f});
-            positionalVal.Add('q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
+            positionalVal.Add('Q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
                                             -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -1.0f,
                                             -0.5f,  0.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -0.5f,
@@ -78,7 +78,7 @@ public class AI : MonoBehaviour
                                             -1.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f});
-            positionalVal.Add('k', new float[] {-3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
+            positionalVal.Add('K', new float[] {-3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
@@ -86,7 +86,7 @@ public class AI : MonoBehaviour
                                              -1.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -1.0f,
                                               2.0f,  2.0f,  0.0f,  0.0f,  0.0f,  0.0f,  2.0f,  2.0f,
                                               2.0f,  3.0f,  1.0f,  0.0f,  0.0f,  1.0f,  3.0f,  2.0f });
-            positionalVal.Add('P', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
+            positionalVal.Add('p', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
                                             0.5f, 1.0f, 1.0f, -2.0f, -2.0f, 1.0f, 1.0f, 0.5f, 
                                             0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -1.0f, -0.5f, 0.5f, 
                                             0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f, 
@@ -94,7 +94,7 @@ public class AI : MonoBehaviour
                                             1.0f, 1.0f, 2.0f, 3.0f, 3.0f, 2.0f, 1.0f, 1.0f, 
                                             5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 
                                             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            positionalVal.Add('N', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f, 
+            positionalVal.Add('n', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f, 
                                             -4.0f, -2.0f, 0.0f, 0.5f, 0.5f, 0.0f, -2.0f, -4.0f, 
                                             -3.0f, 0.5f, 1.0f, 1.5f, 1.5f, 1.0f, 0.5f, -3.0f, 
                                             -3.0f, 0.0f, 1.5f, 2.0f, 2.0f, 1.5f, 0.0f, -3.0f, 
@@ -102,7 +102,7 @@ public class AI : MonoBehaviour
                                             -3.0f, 0.0f, 1.0f, 1.5f, 1.5f, 1.0f, 0.0f, -3.0f, 
                                             -4.0f, -2.0f, 0.0f, 0.0f, 0.0f, 0.0f, -2.0f, -4.0f, 
                                             -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f});
-            positionalVal.Add('B', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f, 
+            positionalVal.Add('b', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f, 
                                             -1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, -1.0f, 
                                             -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 
                                             -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 
@@ -110,7 +110,7 @@ public class AI : MonoBehaviour
                                             -1.0f, 0.0f, 0.5f, 1.0f, 1.0f, 0.5f, 0.0f, -1.0f, 
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 
                                             -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f});
-            positionalVal.Add('R', new float[] {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 
+            positionalVal.Add('r', new float[] {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f, 
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f, 
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f, 
@@ -118,7 +118,7 @@ public class AI : MonoBehaviour
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f, 
                                             0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f, 
                                             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-            positionalVal.Add('Q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f, 
+            positionalVal.Add('q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f, 
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f, -1.0f, 
                                             -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -1.0f, 
                                             -0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -0.5f, 
@@ -126,7 +126,7 @@ public class AI : MonoBehaviour
                                             -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -1.0f, 
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 
                                             -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f});
-            positionalVal.Add('K', new float[] {2.0f, 3.0f, 1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 2.0f, 
+            positionalVal.Add('k', new float[] {2.0f, 3.0f, 1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 2.0f, 
                                             2.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 
                                             -1.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -1.0f, 
                                             -2.0f, -3.0f, -3.0f, -4.0f, -4.0f, -3.0f, -3.0f, -2.0f, 
@@ -142,8 +142,6 @@ public class AI : MonoBehaviour
         // This exists only to satisfy the tuple return
         bestMove = new Move(this.board.squares[1], this.board.squares[26], 0);
         throwAwayMove = new Move(this.board.squares[1], this.board.squares[26], 0);
-        infinity = 999999f;
-        originalWhite = GameManager.instance.white;
     }
 
     public float Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
@@ -162,11 +160,11 @@ public class AI : MonoBehaviour
                     if (player)
                         return infinity;
                     else
-                        return -infinity;
+                        return infinity;
                 }
                 else if (board.stalemate)
                     return 0;
-                return -CalculatePos(legalMoves, pieceIndex);
+                return CalculatePos(legalMoves, pieceIndex);
             }
             else if (color == "BLACK")
             {
@@ -179,7 +177,7 @@ public class AI : MonoBehaviour
                 }
                 else if (board.stalemate)
                     return 0;
-                return CalculatePos(legalMoves, pieceIndex);
+                return -CalculatePos(legalMoves, pieceIndex);
             }
         }
 
@@ -194,15 +192,17 @@ public class AI : MonoBehaviour
                 board.MakeMove(move);
 
                 // Recursively check next moves in line
-                float currentEval = Search(depth -1, originalDepth, false, color, alpha, beta);
+                float currentEval = Search(depth -1, originalDepth, false, color, alpha, beta); // infinity
                 board.UnmakeMove(move);
-                max = Mathf.Max(max, currentEval);
+                max = Mathf.Max(max, currentEval); // 
+                
+                if (max != infinity)
+                {
+                    alpha = Mathf.Max(alpha, max);
 
-                alpha = Mathf.Max(alpha, max);
-
-                if (alpha >= beta && max != infinity)
-                    break;
-
+                    if (alpha >= beta)
+                        break;
+                }
                 if (max > bestValueMove)
                 {
                     bestValueMove = max;
@@ -217,20 +217,23 @@ public class AI : MonoBehaviour
             float bestValueMove = infinity;
             foreach (Move move in legalMoves)
             {
-                // Make the move
+                // Make the move -- not the problem
                 board.MakeMove(move);
 
                 // Recursively check next moves in line
-                float currentEval = Search(depth -1, originalDepth, true, color, alpha, beta);
+                float currentEval = Search(depth -1, originalDepth, true, color, alpha, beta); 
                 board.UnmakeMove(move);
 
                 min = Mathf.Min(min, currentEval);
+                if (min != -infinity)
+                {
+                    // Alpha Beta pruning -- not the problem.
+                    beta = Mathf.Min(beta, min);
 
-                beta = Mathf.Min(beta, min);
-
-                if (beta <= alpha && min != infinity)
-                    break;
-                
+                    if (beta <= alpha)
+                        break;
+                }
+                // Can't be this
                 if (min < bestValueMove)
                 {
                     bestValueMove = min;
@@ -244,9 +247,9 @@ public class AI : MonoBehaviour
         //     Debug.Log("Something went Wrong");
         //     return (legalMoves[0], 0f);
         // }
-        // Debug.Log(CalculatePos(legalMoves, pieceIndex));
         bestMove = currentBestMove;
-        GameManager.instance.white = originalWhite;
+        board.GetLegalMoves();
+        Debug.Log(CalculatePos(legalMoves, board.pieceIndex));
         return 0f;
     }
 
@@ -261,8 +264,10 @@ public class AI : MonoBehaviour
         float sum = 0;
         foreach (int i in pieceIndex)
         {
-            sum += pieceVal[board.squares[i].piece[0]];
-            sum += positionalVal[board.squares[i].piece[0]][board.GetIndex(board.squares[i].position)];
+            if (Char.IsLower(board.squares[i].piece, 0))
+                sum += pieceVal[board.squares[i].piece[0]] - positionalVal[board.squares[i].piece[0]][board.GetIndex(board.squares[i].position)];
+            else   
+                sum += pieceVal[board.squares[i].piece[0]] + positionalVal[board.squares[i].piece[0]][board.GetIndex(board.squares[i].position)];
         }
         return sum;
     }

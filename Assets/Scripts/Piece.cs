@@ -12,6 +12,7 @@ public class Piece : MonoBehaviour
     private Square originalSquare;
     public bool wasControlled;
     public string piece;
+    public bool hasMoved;
 
     // Current index on 64 integer array board.
     public int currentIndex;
@@ -20,6 +21,7 @@ public class Piece : MonoBehaviour
     {
         controllingPiece = false;
         wasControlled = false;
+        hasMoved = false;
         piece = "";
     }
 
@@ -33,23 +35,46 @@ public class Piece : MonoBehaviour
             GameObject closestObjectToMouse = GetNearestSquare();
             Move[] moves = GameManager.instance.board.GetLegalMoves();
 
+            
+
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
+            string moveStr = move.ToString();
             bool moveFound = false;
+            // if (piece.ToUpper().Equals("K"))
+            // {   
+            //     if (closestObjectToMouse.GetComponent<Square>().position.Equals("g1"))
+            //     {
+            //         moveStr = "O-O";
+            //     }
+            //     else if (closestObjectToMouse.GetComponent<Square>().position.Equals("c1"))
+            //     {
+            //         moveStr = "O-O-O";
+            //     }
+            // }
+
             foreach (Move i in moves)
             {
-                if (i.ToString().Equals(move.ToString()))
+                if (i.ToString().Equals(moveStr))
                 {
-                    transform.position = closestObjectToMouse.transform.position;
+                    transform.position = new Vector3(closestObjectToMouse.transform.position.x, closestObjectToMouse.transform.position.y ,closestObjectToMouse.transform.position.z - 0.01f);
                     if (!closestObjectToMouse.GetComponent<Square>().piece.Equals(""))
                     {
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
-                    closestObjectToMouse.GetComponent<Square>().piece = originalSquare.piece;
-                    closestObjectToMouse.GetComponent<Square>().pieceObj = originalSquare.pieceObj;
-                    originalSquare.piece = "";
                     
+                    closestObjectToMouse.GetComponent<Square>().pieceObj = originalSquare.pieceObj;
+                    
+                    GameManager.instance.board.MakeMove(i);
+                    this.hasMoved = true;
+
+                    
+                    if (i.pawnPromote)
+                        PromotePawn(i.newSquare.pieceObj, move.newSquare.gameObject, GameManager.instance.white);
+
                     moveFound = true;
-                    GameManager.instance.white = !GameManager.instance.white;
+                    FindObjectOfType<Sound>().PlayMoveSound();
+
+                    // GameManager.instance.white = !GameManager.instance.white;
                     break;
                 }
             }
@@ -64,12 +89,15 @@ public class Piece : MonoBehaviour
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
 
                 // Search for the best move 
-                Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -Mathf.Infinity, Mathf.Infinity);
+                Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);
                 Debug.Log(computerMove.ToString());
 
+                computerMove.original.pieceObj.GetComponent<Piece>().hasMoved = true;
 
-                // Change the position of the original object to where it should be after the move
+                
                 computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z);
+                
+                // Change the position of the original object to where it should be after the move
                 
                 // Destroy the piece that is being taken if present.
                 if (!computerMove.newSquare.piece.Equals(""))
@@ -84,7 +112,7 @@ public class Piece : MonoBehaviour
                 if (computerMove.pawnPromote)
                     PromotePawn(computerMove.newSquare.pieceObj, computerMove.newSquare.gameObject, GameManager.instance.white);
 
-                // Change the next player to move
+                FindObjectOfType<Sound>().PlayMoveSound();
             }
         }
         else if (controllingThisPiece)
@@ -97,7 +125,7 @@ public class Piece : MonoBehaviour
     // Only promotes to queen. :( no way Im doing anything else lmao. Maybe in the futre.
     private void PromotePawn(GameObject square, GameObject square2, bool white)
     {
-        byte[] bytes = File.ReadAllBytes("./Assets/Resources/Pieces/" + ((!white) ? "Black Pieces/" : "White Pieces/") + ((!white) ? "Q" : "q") + ".png");
+        byte[] bytes = File.ReadAllBytes("./Assets/Resources/Pieces/" + ((!white) ? "White Pieces/" : "Black Pieces/") + ((!white) ? "Q" : "q") + ".png");
         float size = square2.transform.localScale.x / square2.GetComponent<SpriteRenderer>().sprite.bounds.size.x;
         Texture2D texture = new Texture2D((int)size, (int)size, TextureFormat.RGB24, false);
         texture.filterMode = FilterMode.Trilinear;
