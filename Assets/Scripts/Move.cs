@@ -12,16 +12,17 @@ public class Move
     public bool isCastle;
     public bool pawnPromote;
     public int index;
+    public Vector3 newRookPosition;
+    public GameObject castleRook;
+
 
     public Move(Square original, Square newSquare, int index, bool isCastle=false, string castle="")
     {
         // Don't want an else cause branching = bad. Though Im one to talk lmao GetPawnMoves() :(
-        this.isCastle = false;
+        this.isCastle = isCastle;
+        this.castle = castle;
         if (isCastle)
-        {
-            this.castle = castle;
-            this.isCastle = true;
-        }
+            SetCastle();
         this.original = original;
         this.newSquare = newSquare;
         this.index = index;
@@ -32,12 +33,35 @@ public class Move
 
     public string ToString()
     {
-        if (isCastle) return castle;
         return original.position + newSquare.position;
     }
 
     public bool Equals(Move other)
     {
         return this.ToString().Equals(other.ToString());
+    }
+
+    private void SetCastle()
+    {
+        if (castle.Equals("WHITE-KING"))
+        {
+            castleRook = GameManager.instance.board.squares[63].pieceObj;
+            newRookPosition = GameManager.instance.board.squares[61].transform.position;
+        }
+        else if (castle.Equals("WHITE-QUEEN"))
+        {
+            castleRook = GameManager.instance.board.squares[56].pieceObj;
+            newRookPosition = GameManager.instance.board.squares[59].transform.position;
+        }
+        else if (castle.Equals("BLACK-KING"))
+        {
+            castleRook = GameManager.instance.board.squares[7].pieceObj;
+            newRookPosition = GameManager.instance.board.squares[5].transform.position;
+        }
+        else if (castle.Equals("BLACK-QUEEN"))
+        {
+            castleRook = GameManager.instance.board.squares[0].pieceObj;
+            newRookPosition = GameManager.instance.board.squares[3].transform.position;
+        }
     }
 }
