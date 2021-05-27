@@ -13,6 +13,8 @@ public class Board : MonoBehaviour
     // Whites turn if true
     public bool white;
     private int kingIndex;
+    private int whiteKingIndex;
+    private int blackKingIndex;
     private List<Move> legalMoves;
 
     private List<int> rookIndex;
@@ -55,13 +57,14 @@ public class Board : MonoBehaviour
 
     void Start()
     {
-        GetPsuedoLegalMoves();
+        GetKingIndex();
     }
 
 
     public void AddSquare(Square square)
     {
         squaresList.Add(square);
+        
     }
 
     public void ConvertSquareListToArray()
@@ -74,6 +77,21 @@ public class Board : MonoBehaviour
         return ((( 8 - ((int)(position[1] - '0'))) * 8) + ((int)position[0] - 97));
     }
 
+    private void GetKingIndex()
+    {
+        for (int i = 0; i < squares.Length; i++)
+        {
+            if (squares[i].piece.Equals("K"))
+            {
+                // 6
+                whiteKingIndex = i;
+            }
+            else if (squares[i].piece.Equals("k"))
+            {
+                blackKingIndex = i;
+            }
+        }
+    }
     /*
      * Returns a set of psuedo legal moves in string form such as e2e4
      * Returns a set of possibly illegal moves. These are then parsed
@@ -84,6 +102,7 @@ public class Board : MonoBehaviour
     {
         pieceIndex.Clear();
         white = GameManager.instance.white;
+        byte numericColor = (byte)(white ? 1 : 2);
 
         legalMoves = new List<Move>();
         
@@ -94,6 +113,7 @@ public class Board : MonoBehaviour
         string kingPieceToLookFor = (white ? "K" : "k");
         string queenPieceToLookFor = (white ? "Q" : "q");
         
+
         kingIndex = -1;
 
         for (int i = 0; i < squares.Length; i++)
@@ -102,32 +122,41 @@ public class Board : MonoBehaviour
             pieceIndex.Add(i);
             if (squares[i].piece.Equals(pawnPieceToLookFor))
             {
+                // 8
                 GetPawnMoves(squares[i], i);
             }
             else if (squares[i].piece.Equals(knightPieceToLookFor))
             {  
+                // 4
                 GetKnightMoves(squares[i], i);
             } 
             else if (squares[i].piece.Equals(queenPieceToLookFor))
             {
+                // 3
                 GetQueenMoves(squares[i], i);
             }
             else if (squares[i].piece.Equals(bishopPieceToLookFor))
             {
+                // 8
                 GetBishopMoves(squares[i], i);
             }
             else if (squares[i].piece.Equals(rookPieceToLookFor))
             {
+                // 10
                 GetRookMoves(squares[i], i);
                 rookIndex.Add(i);
             }
             else if (squares[i].piece.Equals(kingPieceToLookFor))
             {
+                // 6
                 kingIndex = i;
                 GetKingMoves(squares[i], i);
             }
 
         }
+
+        // GetCastleMove(squares[kingIndex], kingIndex);
+
 
         if (kingIndex == -1)
             Debug.Log(("No King Piece Found {0}", white.ToString()));
@@ -141,6 +170,7 @@ public class Board : MonoBehaviour
     public Move[] GetLegalMoves()
     {
         GetPsuedoLegalMoves();
+        
         stalemate = false;
         checkmate = false;
         // Check if statemate
@@ -149,6 +179,7 @@ public class Board : MonoBehaviour
 
         int tempKingIndex = kingIndex;
 
+        // float time = Time.realtimeSinceStartup;
         for (int i = legalMoves.Count - 1; i > -1; i--)
         {
             if (legalMoves[i].isCastle) continue;
@@ -180,6 +211,8 @@ public class Board : MonoBehaviour
             }
             UnmakeMove(legalMoves[i]);
         }
+        // time = Time.realtimeSinceStartup - time;
+        // Debug.Log(time);
         
         // After parsing all illegal moves there were no possible moves for player
         // meaning he is in check and that means mate.
@@ -187,7 +220,7 @@ public class Board : MonoBehaviour
         {
             checkmate = true;
         }
-
+        
         return legalMoves.ToArray();
     }
 
@@ -220,40 +253,6 @@ public class Board : MonoBehaviour
                 return;
             }
         }
-        else if (move.isCastle)
-        {
-            if (move.castle.Equals("O-O-O"))
-            {
-                move.original.piece = "";
-                move.newSquare.piece = "";
-                if (white)
-                {
-                    squares[move.index].piece = "K";
-                    squares[move.index + 1].piece = "R";
-                }
-                else
-                {
-                    squares[move.index].piece = "k";
-                    squares[move.index + 1].piece = "r";
-                }
-            }
-            else
-            {
-                move.original.piece = "";
-                move.newSquare.piece = "";
-                if (white)
-                {
-                    squares[move.index].piece = "K";
-                    squares[move.index - 1].piece = "R";
-                }
-                else
-                {
-                    squares[move.index].piece = "k";
-                    squares[move.index - 1].piece = "r";
-                }
-            }
-            return;
-        }
         move.newSquare.piece = move.original.piece;   
         move.original.piece = "";
         GameManager.instance.white = !GameManager.instance.white;
@@ -274,45 +273,7 @@ public class Board : MonoBehaviour
             }
             move.newSquare.piece = move.pieceNew;
             move.pawnPromote = false;
-            Debug.Log(move.ToString());
-            
-        }
-        else if (move.isCastle)
-        {
-            if (move.castle.Equals("O-O-O"))
-            {
-                if (white)
-                {
-                    move.original.piece = "K";
-                    move.newSquare.piece = "R";
-                    squares[move.index].piece = "";
-                    squares[move.index + 1].piece = "";
-                }
-                else 
-                {
-                    move.original.piece = "k";
-                    move.newSquare.piece = "r";
-                    squares[move.index].piece = "";
-                    squares[move.index + 1].piece = "";
-                }
-            }
-            else
-            {
-                if (white)
-                {
-                    move.original.piece = "K";
-                    move.newSquare.piece = "R";
-                    squares[move.index].piece = "";
-                    squares[move.index - 1].piece = "";
-                }
-                else 
-                {
-                    move.original.piece = "k";
-                    move.newSquare.piece = "r";
-                    squares[move.index].piece = "";
-                    squares[move.index - 1].piece = "";
-                }
-            }
+            Debug.Log(move.ToString());   
         }
         else
         {
@@ -339,9 +300,9 @@ public class Board : MonoBehaviour
                     if (k == j)
                     {
                         if (white)
-                            legalMoves.Add(new Move(square, squares[j], 58, true, "O-O-O"));
+                        {    legalMoves.Add(new Move(square, squares[j], 58, true, "O-O-O")); Debug.Log("Castle Found");} 
                         else
-                            legalMoves.Add(new Move(square, squares[j], 2, true, "O-O-O"));
+                        {    legalMoves.Add(new Move(square, squares[j], 2, true, "O-O-O")); Debug.Log("Castle Found");}
 
                     }
                 }
@@ -356,9 +317,9 @@ public class Board : MonoBehaviour
                     if (k == j)
                     {
                         if (white)
-                            legalMoves.Add(new Move(square, squares[j], 62, true, "O-O"));
+                        {    legalMoves.Add(new Move(square, squares[j], 62, true, "O-O")); Debug.Log("Castle Found");}
                         else
-                            legalMoves.Add(new Move(square, squares[j], 6, true, "O-O"));
+                        {    legalMoves.Add(new Move(square, squares[j], 6, true, "O-O")); Debug.Log("Castle Found");}
                     }
                 }
             }
@@ -578,7 +539,6 @@ public class Board : MonoBehaviour
                     break;
                 else if (stopAtH && squares[index].position[0] == 'h')
                     break;
-
             }
         }
         return true;
@@ -608,13 +568,25 @@ public class Board : MonoBehaviour
                 {
                     if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
                     {
+                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
                         return true;
                     }
+                    if (offset[k] == 1) break;
+                }
+                else if (squares[index].position[0] == 'a')
+                {
+                    if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
+                    {
+                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
+                        return true;
+                    }
+                    if (offset[k] == -1) break;
                 }
                 else if (!squares[index].piece.Equals("") && Char.IsUpper(squares[index].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
+                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
                         return true;
                     }
                     break;
@@ -647,6 +619,7 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
+                        Debug.Log(String.Format("Found vertical check with offset {0}, from {1}, kingIndex: {2}", offset[k], (i + (j * offset[k])), i));
                         return true;
                     }
                     break;
@@ -704,11 +677,11 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("B") || piece.Equals("Q")) 
                     {
+                        Debug.Log(String.Format("Found diagnol check with offset {0}, from {1}, kingIndex: {2}", offset[k], (i + (j * offset[k])), i));
                         return true;
                     }
                     break;
                 }
-                
             }
         }
         return false;
@@ -747,5 +720,4 @@ public class Board : MonoBehaviour
         }
         return false;
     }
-
 }

@@ -40,17 +40,17 @@ public class Piece : MonoBehaviour
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
             string moveStr = move.ToString();
             bool moveFound = false;
-            // if (piece.ToUpper().Equals("K"))
-            // {   
-            //     if (closestObjectToMouse.GetComponent<Square>().position.Equals("g1"))
-            //     {
-            //         moveStr = "O-O";
-            //     }
-            //     else if (closestObjectToMouse.GetComponent<Square>().position.Equals("c1"))
-            //     {
-            //         moveStr = "O-O-O";
-            //     }
-            // }
+            if (piece.ToUpper().Equals("K"))
+            {   
+                if (closestObjectToMouse.GetComponent<Square>().position.Equals("g1"))
+                {
+                    moveStr = "O-O";
+                }
+                else if (closestObjectToMouse.GetComponent<Square>().position.Equals("c1"))
+                {
+                    moveStr = "O-O-O";
+                }
+            }
 
             foreach (Move i in moves)
             {
@@ -62,7 +62,8 @@ public class Piece : MonoBehaviour
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
                     
-                    closestObjectToMouse.GetComponent<Square>().pieceObj = originalSquare.pieceObj;
+                    closestObjectToMouse.GetComponent<Square>().pieceObj = (GameObject)Instantiate(originalSquare.pieceObj, originalSquare.pieceObj.transform.position, Quaternion.identity);
+                    // Destroy(originalSquare.pieceObj);
                     
                     GameManager.instance.board.MakeMove(i);
                     this.hasMoved = true;
@@ -74,7 +75,6 @@ public class Piece : MonoBehaviour
                     moveFound = true;
                     FindObjectOfType<Sound>().PlayMoveSound();
 
-                    // GameManager.instance.white = !GameManager.instance.white;
                     break;
                 }
             }
@@ -84,12 +84,15 @@ public class Piece : MonoBehaviour
             }
             else
             {
-                int depth = 3;
+                int depth = 4;
                 // Initialize some values
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
 
                 // Search for the best move 
+                float time = Time.realtimeSinceStartup;
                 Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);
+                time = Time.realtimeSinceStartup - time;
+                Debug.Log(time);
                 Debug.Log(computerMove.ToString());
 
                 computerMove.original.pieceObj.GetComponent<Piece>().hasMoved = true;
