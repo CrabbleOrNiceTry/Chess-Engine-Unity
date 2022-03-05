@@ -16,8 +16,8 @@ public class Board : MonoBehaviour
     private Dictionary<char, float> pieceVal;
     // private Dictionary<char, List<int>> pieceDictionary;
 
-    public List<int> whitePieces;
-    public List<int> blackPieces;
+    public HashSet<int> whitePieces;
+    public HashSet<int> blackPieces;
 
 
     public Square[] squares;
@@ -47,8 +47,8 @@ public class Board : MonoBehaviour
         pieceVal = new Dictionary<char, float>();
         pieceIndex = new HashSet<int>();
         legalMoves = new List<Move>();
-        List<int> whitePieces = new List<int>();
-        List<int> blackPieces = new List<int>();
+        whitePieces = new HashSet<int>();
+        blackPieces = new HashSet<int>();
         // pieceDictionary = new Dictionary<char, List<int>>();
         white = true;
         stalemate = false;
@@ -137,8 +137,8 @@ public class Board : MonoBehaviour
         pieceIndex = new HashSet<int>();
         // Make pieceIndex a set of all the pieces from whitePieces and blackPieces
         pieceIndex = new HashSet<int>();
-        pieceIndex.UnionWith(whitePieces); // CURRENTLY HAS INCORRECT PIECES IN IT OVER TIME.
-        pieceIndex.UnionWith(blackPieces); // CURRENTLY HAS INCORRECT PIECES IN IT OVER TIME.
+        pieceIndex.UnionWith(whitePieces);
+        pieceIndex.UnionWith(blackPieces);
         // IMPORTANT: pieceIndex is CRUCIAL to the function of the CalculatePos() function in AI.cs
         // DO NOT DELTE IT unless being replaced. 
 
@@ -155,12 +155,9 @@ public class Board : MonoBehaviour
         string queenPieceToLookFor = (white ? "Q" : "q");
 
         // kingIndex = -1;
-
-        // foreach (int i in (white ? whitePieces : blackPieces)) // CURRENTLY HAS INCORRECT PIECES IN IT OVER TIME. BROKEN
-        for (int i = 0; i < squares.Length; i++)
+        foreach (int i in (white ? whitePieces : blackPieces))
+        // for (int i = 0; i < squares.Length; i++)
         {
-            if (squares[i].piece.Equals("")) continue;
-            pieceIndex.Add(i);
             if (squares[i].piece.Equals(pawnPieceToLookFor))
             {
                 // 8
@@ -193,6 +190,7 @@ public class Board : MonoBehaviour
             //     GetKingMoves(squares[i], i);
             // }
         }
+        GetKingMoves(squares[white ? whiteKingIndex : blackKingIndex], white ? whiteKingIndex : blackKingIndex);
     }
 
     /*
@@ -308,6 +306,7 @@ public class Board : MonoBehaviour
                 whitePieces.Add(58);
                 whitePieces.Add(59);
                 whiteKingIndex = 58;
+
             }
             else if (move.castle.Equals("WHITE-KING"))
             {
@@ -341,7 +340,7 @@ public class Board : MonoBehaviour
                 move.original.piece = "";
                 // temp += "+";
                 move.pawnPromote = true;
-                if (white)
+                if (GameManager.instance.white)
                 {
                     whitePieces.Remove(move.original.index);
                     whitePieces.Add(move.newSquare.index);
@@ -359,7 +358,7 @@ public class Board : MonoBehaviour
         }
         move.newSquare.piece = move.original.piece;
         move.original.piece = "";
-        if (white)
+        if (GameManager.instance.white)
         {
             if (move.newSquare.piece.Equals("K"))
                 whiteKingIndex = move.newSquare.index;
@@ -371,8 +370,8 @@ public class Board : MonoBehaviour
         {
             if (move.newSquare.piece.Equals("k"))
                 blackKingIndex = move.newSquare.index;
-            blackPieces.Remove(move.original.index);
-            blackPieces.Add(move.newSquare.index);
+            var remove = blackPieces.Remove(move.original.index);
+            var add = blackPieces.Add(move.newSquare.index);
             move.tookOppositeColor = whitePieces.Remove(move.newSquare.index);
         }
         GameManager.instance.white = !GameManager.instance.white;
@@ -381,6 +380,7 @@ public class Board : MonoBehaviour
 
     public void UnmakeMove(Move move)
     {
+        GameManager.instance.white = !GameManager.instance.white;
         if (move.isCastle)
         {
             if (move.castle.Equals("BLACK-QUEEN"))
@@ -431,7 +431,6 @@ public class Board : MonoBehaviour
                 whitePieces.Add(63);
                 whiteKingIndex = 60;
             }
-            GameManager.instance.white = !GameManager.instance.white;
             return;
         }
 
@@ -454,7 +453,7 @@ public class Board : MonoBehaviour
             move.original.piece = move.pieceOriginal;
             move.newSquare.piece = move.pieceNew;
         }
-        if (white)
+        if (GameManager.instance.white)
         {
             if (move.original.piece.Equals("K"))
                 whiteKingIndex = move.original.index;
@@ -470,13 +469,12 @@ public class Board : MonoBehaviour
             if (move.original.piece.Equals("k"))
                 blackKingIndex = move.original.index;
             blackPieces.Add(move.original.index);
-            blackPieces.Remove(move.newSquare.index);
+            var remove = blackPieces.Remove(move.newSquare.index);
             if (move.tookOppositeColor)
             {
                 whitePieces.Add(move.newSquare.index);
             }
         }
-        GameManager.instance.white = !GameManager.instance.white;
     }
     #region Castle Stuff
 
@@ -930,7 +928,6 @@ public class Board : MonoBehaviour
                 {
                     if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
                     {
-                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
                         return true;
                     }
                     if (offset[k] == 1) break;
@@ -939,7 +936,6 @@ public class Board : MonoBehaviour
                 {
                     if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
                     {
-                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
                         return true;
                     }
                     if (offset[k] == -1) break;
@@ -956,7 +952,6 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
-                        Debug.Log(String.Format("Found horizontal check with offset {0}, from {1}, kingIndex: {2}", offset[k], index, i));
                         return true;
                     }
                     break;
@@ -989,7 +984,6 @@ public class Board : MonoBehaviour
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
-                        Debug.Log(String.Format("Found vertical check with offset {0}, from {1}, kingIndex: {2}", offset[k], (i + (j * offset[k])), i));
                         return true;
                     }
                     break;
@@ -1058,7 +1052,7 @@ public class Board : MonoBehaviour
     private bool KingPawnCheck(Square square, int i)
     {
         int[] offset;
-        if (white)
+        if (GameManager.instance.white)
             offset = new int[] { -7, -9 };
         else
             offset = new int[] { 7, 9 };
