@@ -38,32 +38,30 @@ public class Piece : MonoBehaviour
             
 
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
+            Debug.Log(move.ToString());
             string moveStr = move.ToString();
             bool moveFound = false;
-            // if (piece.ToUpper().Equals("K"))
-            // {   
-            //     if (closestObjectToMouse.GetComponent<Square>().position.Equals("g1"))
-            //     {
-            //         moveStr = "O-O";
-            //     }
-            //     else if (closestObjectToMouse.GetComponent<Square>().position.Equals("c1"))
-            //     {
-            //         moveStr = "O-O-O";
-            //     }
-            // }
 
             foreach (Move i in moves)
             {
                 if (i.ToString().Equals(moveStr))
                 {
+                    Debug.Log(i);
+                    
                     transform.position = new Vector3(closestObjectToMouse.transform.position.x, closestObjectToMouse.transform.position.y ,closestObjectToMouse.transform.position.z - 0.01f);
+                    if (i.isCastle)
+                    {
+                        i.castleRook.transform.position = i.newRookPosition;
+                    }
                     if (!closestObjectToMouse.GetComponent<Square>().piece.Equals(""))
                     {
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
                     
-                    closestObjectToMouse.GetComponent<Square>().pieceObj = originalSquare.pieceObj;
-                    
+                    // closestObjectToMouse.GetComponent<Square>().pieceObj = (GameObject)Instantiate(gameObject, closestObjectToMouse.gameObject.transform.position, Quaternion.identity);
+
+                    i.newSquare.pieceObj = i.original.pieceObj;
+                    i.original.pieceMoved = true;
                     GameManager.instance.board.MakeMove(i);
                     this.hasMoved = true;
 
@@ -74,7 +72,6 @@ public class Piece : MonoBehaviour
                     moveFound = true;
                     FindObjectOfType<Sound>().PlayMoveSound();
 
-                    // GameManager.instance.white = !GameManager.instance.white;
                     break;
                 }
             }
@@ -84,7 +81,7 @@ public class Piece : MonoBehaviour
             }
             else
             {
-                int depth = 3;
+                int depth = 4;
                 // Initialize some values
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
 
@@ -92,19 +89,23 @@ public class Piece : MonoBehaviour
                 Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);
                 Debug.Log(computerMove.ToString());
 
-                computerMove.original.pieceObj.GetComponent<Piece>().hasMoved = true;
-
                 
-                computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z);
+                computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z - 0.01f);
                 
                 // Change the position of the original object to where it should be after the move
                 
                 // Destroy the piece that is being taken if present.
                 if (!computerMove.newSquare.piece.Equals(""))
-                    Destroy(computerMove.newSquare.pieceObj);
-                
-                computerMove.newSquare.pieceObj = computerMove.original.pieceObj;
+                {
+                    Debug.Log("Destroying Piece at " + computerMove.newSquare.position);
+                    Debug.Log(computerMove.newSquare.piece);
+                    computerMove.newSquare.pieceObj.SetActive(false);
+                    // Destroy(computerMove.newSquare.pieceObj);
+                }
 
+                // THIS IS GOING TO BE A PROBLEM. EVERY SQUARE THIS PIECE HAS EVER OCCUPIED HAS THIS EXACT PIECE OBJECT.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                computerMove.newSquare.pieceObj = computerMove.original.pieceObj;
+                computerMove.original.pieceMoved = true;
                 // Make the move on the board array
                 GameManager.instance.board.MakeMove(computerMove);
                 
@@ -138,7 +139,7 @@ public class Piece : MonoBehaviour
 
     private GameObject GetNearestSquare()
     {
-        GameObject closestObjectToMouse = (GameObject)Instantiate(GameManager.instance.board.squares[0].gameObject);
+        GameObject closestObjectToMouse = gameObject;
         float closestDistance = 10000f;
         for (int i = 0; i < GameManager.instance.board.squares.Length; i++)
         {

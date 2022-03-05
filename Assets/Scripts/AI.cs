@@ -22,6 +22,7 @@ public class AI : MonoBehaviour
         infinity = 999999f;
         pieceVal = new Dictionary<char, float>();
         positionalVal = new Dictionary<char, float[]>();
+
         #region Piece Values
             pieceVal.Add('P', 10.0f);
             pieceVal.Add('N', 35.0f);
@@ -150,8 +151,7 @@ public class AI : MonoBehaviour
         
         if (depth == 0 || legalMoves.Length == 0)
         {
-            HashSet<int> pieceIndex = new HashSet<int>();
-            pieceIndex = board.pieceIndex;
+            
             if (color == "WHITE")
             {
                 if (board.checkmate)
@@ -164,6 +164,8 @@ public class AI : MonoBehaviour
                 }
                 else if (board.stalemate)
                     return 0;
+                HashSet<int> pieceIndex = new HashSet<int>();
+                pieceIndex = board.pieceIndex;
                 return CalculatePos(legalMoves, pieceIndex);
             }
             else if (color == "BLACK")
@@ -177,6 +179,8 @@ public class AI : MonoBehaviour
                 }
                 else if (board.stalemate)
                     return 0;
+                HashSet<int> pieceIndex = new HashSet<int>();
+                pieceIndex = board.pieceIndex;
                 return -CalculatePos(legalMoves, pieceIndex);
             }
         }
