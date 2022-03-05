@@ -11,6 +11,7 @@ public class Square : MonoBehaviour
     public GameObject pieceObj;
     public bool isPinned;
     public bool pieceMoved;
+    public int index;
     // public int piecePinning;
 
     void Awake()
@@ -22,5 +23,10 @@ public class Square : MonoBehaviour
     public void SetPosition(string position)
     {
         this.position = position;
+    }
+
+    public bool IsEmpty()
+    {
+        return piece.Equals("");
     }
 }

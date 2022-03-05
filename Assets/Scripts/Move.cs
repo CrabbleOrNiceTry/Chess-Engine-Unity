@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Move
 {
-    public Square original; 
+    public Square original;
     public Square newSquare;
     public string pieceOriginal;
     public string pieceNew;
@@ -14,9 +14,10 @@ public class Move
     public int index;
     public Vector3 newRookPosition;
     public GameObject castleRook;
+    public bool tookOppositeColor;
 
 
-    public Move(Square original, Square newSquare, int index, bool isCastle=false, string castle="")
+    public Move(Square original, Square newSquare, int index, bool isCastle = false, string castle = "")
     {
         // Don't want an else cause branching = bad. Though Im one to talk lmao GetPawnMoves() :(
         this.isCastle = isCastle;
@@ -29,6 +30,7 @@ public class Move
         pieceOriginal = "" + original.piece;
         pieceNew = "" + newSquare.piece;
         pawnPromote = false;
+        tookOppositeColor = false;
     }
 
     public string ToString()

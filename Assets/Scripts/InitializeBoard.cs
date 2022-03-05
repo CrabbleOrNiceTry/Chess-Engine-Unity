@@ -34,8 +34,9 @@ public class InitializeBoard : MonoBehaviour
         float xPos = originalX;
         float yPos = originaly;
         Color colorForSquare = whiteColor;
-        string fen = "" + fenPerm;                              
-        int fenCount = 0;                                                                                  
+        string fen = "" + fenPerm;
+        int fenCount = 0;
+        int count = 0;
         // For some reason I have to initialize, color, and render each thing separetly.
         // Initialize each square
         for (int i = 0; i < 8; i++)
@@ -43,43 +44,44 @@ public class InitializeBoard : MonoBehaviour
             for (int j = 0; j < 8; j++)
             {
                 bool noPiece = false;
-                bool noFenSub = false;  
+                bool noFenSub = false;
                 if (Char.IsDigit(fen[fenCount]) && fen[fenCount] - '0' > 0)
                 {
                     int f = fen[fenCount] - '0';
                     f--;
                     string strF = "" + f;
                     fen = fen.Substring(0, fenCount) + strF + fen.Substring(fenCount + 1, fen.Length - (fenCount + 1));
-                    if (f <= 0) {fenCount++;}
+                    if (f <= 0) { fenCount++; }
                     noPiece = true;
                     noFenSub = true;
                 }
 
                 GameObject temp = Instantiate(square, new Vector2(xPos, yPos), Quaternion.identity, transform);
                 temp.GetComponent<Square>().SetPosition((new string((char)(j + 97), 1) + "" + (7 - i + 1)));
+                temp.GetComponent<Square>().index = count;
                 if (!noPiece)
                     temp.GetComponent<Square>().piece = "" + fen[fenCount];
                 GameManager.instance.board.squaresList.Add(temp.GetComponent<Square>());
                 xPos += size;
                 if (!noFenSub)
                     fenCount++;
-                
+                count++;
             }
             xPos = originalX;
             yPos -= size;
             black = !black;
         }
         GameManager.instance.board.ConvertSquareListToArray();
-        int count = 0;
+        count = 0;
         // Color each square
         foreach (SpriteRenderer renderer in GetComponentsInChildren<SpriteRenderer>())
         {
-            if (black) 
+            if (black)
                 colorForSquare = blackColor;
             else
                 colorForSquare = whiteColor;
             black = !black;
-            renderer.color = new Color (colorForSquare.r, colorForSquare.g, colorForSquare.b);
+            renderer.color = new Color(colorForSquare.r, colorForSquare.g, colorForSquare.b);
             count++;
             if (count % 8 == 0) black = !black;
         }
@@ -99,7 +101,7 @@ public class InitializeBoard : MonoBehaviour
                     f--;
                     string strF = "" + f;
                     fen = fen.Substring(0, fenCount) + strF + fen.Substring(fenCount + 1, fen.Length - (fenCount + 1));
-                    if (f <= 0) {fenCount++;}
+                    if (f <= 0) { fenCount++; }
                     xPos += size;
                     pieceCount++;
                     continue;
@@ -112,7 +114,7 @@ public class InitializeBoard : MonoBehaviour
                 texture.Apply();
                 // Sprite sprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0, 0), 1.0f);
 
-                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -1f), Quaternion.identity,canvas);
+                GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -1f), Quaternion.identity, canvas);
                 pieceSprite.GetComponent<Piece>().piece = "" + fen[fenCount];
                 pieceSprite.GetComponent<Piece>().currentIndex = pieceCount;
                 GameManager.instance.board.squaresList[pieceCount].pieceObj = pieceSprite;

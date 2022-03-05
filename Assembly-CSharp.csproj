@@ -60,6 +60,7 @@
      <Compile Include="Assets\Scripts\Piece.cs" />
      <Compile Include="Assets\Scripts\Piece Scripts\Rook.cs" />
      <Compile Include="Assets\Scripts\InitializeBoard.cs" />
+     <Compile Include="Assets\Scripts\Tests\MoveGenerationTest.cs" />
  <Reference Include="UnityEngine">
  <HintPath>/home/cbac/Unity/Hub/Editor/2020.3.21f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>
