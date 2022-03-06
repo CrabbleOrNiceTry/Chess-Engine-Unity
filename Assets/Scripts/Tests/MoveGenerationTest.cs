@@ -9,7 +9,7 @@ public class MoveGenerationTest : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        f = false;
+        f = true;
         // Debug.Log("1 ply: " + TestMoveGeneration(1));
         // Debug.Log("2 ply: " + TestMoveGeneration(2));
         // Debug.Log("3 ply: " + TestMoveGeneration(3));

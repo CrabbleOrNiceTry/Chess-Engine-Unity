@@ -6,12 +6,17 @@ using System;
 
 using UnityEngine;
 
+// rnbqkbnrpppppppp8888PPPPPPPPRNBQKBNR
+// 83k42b1r35B24N35K288 -- Bishop pin
+// 83k42b584N32r1BK288 -- Rook pin
+
 public class Board : MonoBehaviour
 {
     // {'P': 10, 'N': 35, 'B': 35, 'R': 52.5, 'Q': 100, 'K': 1000, 'p': -10, 'n': -35, 'b': -35, 'r': -52.5, 'q': -100, 'k': -1000}
 
     private int whiteKingIndex;
     private int blackKingIndex;
+    private int checkCount;
 
     private Dictionary<char, float> pieceVal;
     // private Dictionary<char, List<int>> pieceDictionary;
@@ -24,20 +29,18 @@ public class Board : MonoBehaviour
     public List<Square> squaresList;
     public List<Move> legalMoves;
     public HashSet<int> pieceIndex;
+    private HashSet<int> pinnedPieces; // These pieces cannot move. 
+
+    private HashSet<int> attackedSquares;
 
     [HideInInspector]
     public string fen;
 
     // Whites turn if true
-    public bool white;
 
     public bool stalemate;
 
     public bool checkmate;
-
-
-
-
 
     public float sum;
     void Awake()
@@ -49,8 +52,9 @@ public class Board : MonoBehaviour
         legalMoves = new List<Move>();
         whitePieces = new HashSet<int>();
         blackPieces = new HashSet<int>();
+        pinnedPieces = new HashSet<int>();
+        attackedSquares = new HashSet<int>();
         // pieceDictionary = new Dictionary<char, List<int>>();
-        white = true;
         stalemate = false;
         checkmate = false;
         #region Piece Values
@@ -77,7 +81,6 @@ public class Board : MonoBehaviour
 
     private void InitializePieceDictionary()
     {
-        Debug.Log(squares.Length);
         for (int i = 0; i < squares.Length; i++)
         {
             if (!squares[i].piece.Equals(""))
@@ -142,20 +145,38 @@ public class Board : MonoBehaviour
         // IMPORTANT: pieceIndex is CRUCIAL to the function of the CalculatePos() function in AI.cs
         // DO NOT DELTE IT unless being replaced. 
 
-        white = GameManager.instance.white;
-        byte numericColor = (byte)(white ? 1 : 2);
 
         legalMoves = new List<Move>();
 
-        string pawnPieceToLookFor = (white ? "P" : "p");
-        string rookPieceToLookFor = (white ? "R" : "r");
-        string knightPieceToLookFor = (white ? "N" : "n");
-        string bishopPieceToLookFor = (white ? "B" : "b");
-        string kingPieceToLookFor = (white ? "K" : "k");
-        string queenPieceToLookFor = (white ? "Q" : "q");
+        string pawnPieceToLookFor = (GameManager.instance.white ? "P" : "p");
+        string rookPieceToLookFor = (GameManager.instance.white ? "R" : "r");
+        string knightPieceToLookFor = (GameManager.instance.white ? "N" : "n");
+        string bishopPieceToLookFor = (GameManager.instance.white ? "B" : "b");
+        string kingPieceToLookFor = (GameManager.instance.white ? "K" : "k");
+        string queenPieceToLookFor = (GameManager.instance.white ? "Q" : "q");
+
+        checkCount = 0;
+
+        // Get pinned pieces and attacked squares
+        foreach (int i in (GameManager.instance.white ? blackPieces : whitePieces))
+        {
+            if (squares[i].piece.Equals(bishopPieceToLookFor.ToLower()))
+            {
+                CheckDiagnolPins(i, squares[i], (GameManager.instance.white ? whiteKingIndex : blackKingIndex));
+            }
+            else if (squares[i].piece.Equals(rookPieceToLookFor.ToLower()))
+            {
+                CheckHorizontalPins(i, (GameManager.instance.white ? whiteKingIndex : blackKingIndex), squares[i]);
+                CheckVerticalPins(i, (GameManager.instance.white ? whiteKingIndex : blackKingIndex), squares[i]);
+            }
+        }
+        Debug.Log(pinnedPieces.Count);
+        Debug.Log(attackedSquares.Count);
+
+        if (checkCount >= 2) GetKingMoves(squares[GameManager.instance.white ? whiteKingIndex : blackKingIndex], GameManager.instance.white ? whiteKingIndex : blackKingIndex);
 
         // kingIndex = -1;
-        foreach (int i in (white ? whitePieces : blackPieces))
+        foreach (int i in (GameManager.instance.white ? whitePieces : blackPieces))
         // for (int i = 0; i < squares.Length; i++)
         {
             if (squares[i].piece.Equals(pawnPieceToLookFor))
@@ -190,7 +211,7 @@ public class Board : MonoBehaviour
             //     GetKingMoves(squares[i], i);
             // }
         }
-        GetKingMoves(squares[white ? whiteKingIndex : blackKingIndex], white ? whiteKingIndex : blackKingIndex);
+        GetKingMoves(squares[GameManager.instance.white ? whiteKingIndex : blackKingIndex], GameManager.instance.white ? whiteKingIndex : blackKingIndex);
     }
 
     /*
@@ -211,7 +232,7 @@ public class Board : MonoBehaviour
             return legalMoves.ToArray();
         }
 
-        int tempKingIndex = (white ? whiteKingIndex : blackKingIndex);
+        int tempKingIndex = (GameManager.instance.white ? whiteKingIndex : blackKingIndex);
 
         // float time = Time.realtimeSinceStartup;
         for (int i = legalMoves.Count - 1; i > -1; i--)
@@ -224,7 +245,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                tempKingIndex = (white ? whiteKingIndex : blackKingIndex);
+                tempKingIndex = (GameManager.instance.white ? whiteKingIndex : blackKingIndex);
             }
 
             // Check if the move is in a checked position. If so
@@ -581,7 +602,7 @@ public class Board : MonoBehaviour
 
     #endregion
 
-    private void GetKingMoves(Square square, int i)
+    private async void GetKingMoves(Square square, int i)
     {
         int[] offset = King.GetOffset(square);
 
@@ -589,14 +610,17 @@ public class Board : MonoBehaviour
         {
             if (i + j > 63 || i + j < 0) continue;
 
-            if (squares[i + j].IsEmpty() || Char.IsUpper(squares[i + j].piece[0]) != white) legalMoves.Add(new Move(square, squares[i + j], i + j));
+            if ((squares[i + j].IsEmpty() || Char.IsUpper(squares[i + j].piece[0]) != GameManager.instance.white) && !attackedSquares.Contains(i + j))
+            {
+                legalMoves.Add(new Move(squares[i], squares[i + j], i + j));
+            }
         }
     }
 
     private void GetPawnMoves(Square square, int i)
     {
 
-        int mult = (white ? -1 : 1);
+        int mult = (GameManager.instance.white ? -1 : 1);
         if (square.position[1] == '8' || square.position[1] == '1')
         {
             if (Char.IsLower(square.piece, 0))
@@ -606,14 +630,14 @@ public class Board : MonoBehaviour
             GetQueenMoves(square, i);
             return;
         }
-        if (white
+        if (GameManager.instance.white
             && square.position[1] == '2'
             && squares[i + (16 * mult)].IsEmpty()
             && squares[i + (8 * mult)].IsEmpty())
         {
             legalMoves.Add(new Move(square, squares[i + (16 * mult)], i + (16 * mult)));
         }
-        else if (!white
+        else if (!GameManager.instance.white
             && square.position[1] == '7'
             && squares[i + (16 * mult)].IsEmpty()
             && squares[i + (8 * mult)].IsEmpty())
@@ -624,22 +648,22 @@ public class Board : MonoBehaviour
         {
             legalMoves.Add(new Move(square, squares[i + (8 * mult)], i + (16 * mult)));
         }
-        if (square.position[0] == 'a' && !squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != white)
+        if (square.position[0] == 'a' && !squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != GameManager.instance.white)
         {
             legalMoves.Add(new Move(square, squares[i + (7 * mult)], i + (16 * mult)));
             return;
         }
-        else if (square.position[0] == 'h' && !squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != white)
+        else if (square.position[0] == 'h' && !squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != GameManager.instance.white)
         {
             legalMoves.Add(new Move(square, squares[i + (9 * mult)], i + (16 * mult)));
             return;
         }
         if (square.position[0] == 'h' || square.position[0] == 'a') return;
-        if (!squares[i + (9 * mult)].IsEmpty() && Char.IsUpper(squares[i + (9 * mult)].piece[0]) != white)
+        if (!squares[i + (9 * mult)].IsEmpty() && Char.IsUpper(squares[i + (9 * mult)].piece[0]) != GameManager.instance.white)
         {
             legalMoves.Add(new Move(square, squares[i + (9 * mult)], i + (16 * mult)));
         }
-        if (!squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != white)
+        if (!squares[i + (7 * mult)].IsEmpty() && Char.IsUpper(squares[i + (7 * mult)].piece[0]) != GameManager.instance.white)
         {
             legalMoves.Add(new Move(square, squares[i + (7 * mult)], i + (16 * mult)));
         }
@@ -656,7 +680,7 @@ public class Board : MonoBehaviour
             if (index > 63 || index < 0) continue;
 
             if (squares[index].IsEmpty()
-                || Char.IsUpper(squares[index].piece[0]) != white)
+                || Char.IsUpper(squares[index].piece[0]) != GameManager.instance.white)
             {
                 legalMoves.Add(new Move(square, squares[index], index));
             }
@@ -726,7 +750,7 @@ public class Board : MonoBehaviour
             {
                 legalMoves.Add(new Move(square, squares[j], j));
             }
-            else if (Char.IsUpper(squares[j].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
+            else if (Char.IsUpper(squares[j].piece[0]) != GameManager.instance.white) // Square ContainsKey enemy piece, piece can be taken then break 
             {
                 legalMoves.Add(new Move(square, squares[j], j));
                 break;
@@ -742,7 +766,7 @@ public class Board : MonoBehaviour
             {
                 legalMoves.Add(new Move(square, squares[j], j));
             }
-            else if (Char.IsUpper(squares[j].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
+            else if (Char.IsUpper(squares[j].piece[0]) != GameManager.instance.white) // Square ContainsKey enemy piece, piece can be taken then break 
             {
                 legalMoves.Add(new Move(square, squares[j], j));
                 break;
@@ -761,16 +785,6 @@ public class Board : MonoBehaviour
         List<int> upSquaresToCheckList = new List<int>();
         List<int> downSquaresToCheckList = new List<int>();
 
-
-        // if ((int)((i) / 8) == 0)
-        // {
-        //     for (int j = 1; j < 8 - (int)(((i) / 8)); j++)
-        //     {
-        //         upSquaresToCheckList.Add(i + (j * 8));
-        //     }
-        // }    
-        // else
-        // {
         for (int j = 1; j < (int)(i / 8) + 1; j++)
         {
 
@@ -783,7 +797,6 @@ public class Board : MonoBehaviour
             if (i == 63)
                 Debug.Log(i - (j * 8));
         }
-        // } 
 
         int[] upSquaresToCheck = upSquaresToCheckList.ToArray();
         int[] downSquaresToCheck = downSquaresToCheckList.ToArray();
@@ -796,7 +809,7 @@ public class Board : MonoBehaviour
                 {
                     legalMoves.Add(new Move(square, squares[j], j));
                 }
-                else if (Char.IsUpper(squares[j].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
+                else if (Char.IsUpper(squares[j].piece[0]) != GameManager.instance.white) // Square ContainsKey enemy piece, piece can be taken then break 
                 {
                     legalMoves.Add(new Move(square, squares[j], j));
                     break;
@@ -819,7 +832,7 @@ public class Board : MonoBehaviour
             {
                 legalMoves.Add(new Move(square, squares[j], j));
             }
-            else if (Char.IsUpper(squares[j].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
+            else if (Char.IsUpper(squares[j].piece[0]) != GameManager.instance.white) // Square ContainsKey enemy piece, piece can be taken then break 
             {
                 legalMoves.Add(new Move(square, squares[j], j));
                 break;
@@ -833,9 +846,6 @@ public class Board : MonoBehaviour
 
     private bool GetDiagnolMoves(Square square, int i)
     {
-
-
-
         int[] offset;
         bool stopAtH = false;
         bool stopAtA = false;
@@ -862,23 +872,22 @@ public class Board : MonoBehaviour
         {
             // bool isPossibleCheck = IsPossibleCheck(i, offset[k]);
 
-            // bool pathBlocked = false;
             for (int j = 1; j < 9; j++)
             {
                 int index = i + (j * offset[k]);
 
                 if (index < 0 || index > 63) break;
 
-                if (squares[index].IsEmpty())
+                if (squares[index].IsEmpty()) // Square is empty
                 {
                     legalMoves.Add(new Move(square, squares[index], index));
                 }
-                else if (Char.IsUpper(squares[index].piece[0]) != white)
+                else if (Char.IsUpper(squares[index].piece[0]) != GameManager.instance.white) // Contains an enemy piece
                 {
                     legalMoves.Add(new Move(square, squares[index], index));
                     break;
                 }
-                else
+                else // Contains a friendly piece
                 {
                     break;
                 }
@@ -897,7 +906,7 @@ public class Board : MonoBehaviour
     // Will not work for checking horizontal because offset is 1, -1
     private bool IsPossibleCheck(int i, int offset)
     {
-        int enemyKingIndex = (white ? blackKingIndex : whiteKingIndex);
+        int enemyKingIndex = (GameManager.instance.white ? blackKingIndex : whiteKingIndex);
 
         if (enemyKingIndex % offset == i % offset)
             return true;
@@ -920,13 +929,13 @@ public class Board : MonoBehaviour
                 if (squares[index].IsEmpty()) continue;
 
                 string piece = ("" + squares[index].piece[0] + "").ToUpper();
-                if (!squares[index].IsEmpty() && Char.IsUpper(squares[index].piece[0]) == white) // Freindly Piece
+                if (!squares[index].IsEmpty() && Char.IsUpper(squares[index].piece[0]) != GameManager.instance.white) // Freindly Piece
                 {
                     break;
                 }
                 else if (squares[index].position[0] == 'h')
                 {
-                    if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
+                    if (Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white && piece.Equals("Q") || piece.Equals("R"))
                     {
                         return true;
                     }
@@ -934,7 +943,7 @@ public class Board : MonoBehaviour
                 }
                 else if (squares[index].position[0] == 'a')
                 {
-                    if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
+                    if (Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white && piece.Equals("Q") || piece.Equals("R"))
                     {
                         return true;
                     }
@@ -942,13 +951,13 @@ public class Board : MonoBehaviour
                 }
                 else if (squares[index].position[0] == 'a')
                 {
-                    if (Char.IsUpper(squares[index].piece[0]) != white && piece.Equals("Q") || piece.Equals("R"))
+                    if (Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white && piece.Equals("Q") || piece.Equals("R"))
                     {
                         return true;
                     }
                     if (offset[k] == -1) break;
                 }
-                else if (!squares[index].IsEmpty() && Char.IsUpper(squares[index].piece[0]) != white) // Square ContainsKey enemy piece, piece can be taken then break 
+                else if (!squares[index].IsEmpty() && Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white) // Square ContainsKey enemy piece, piece can be taken then break 
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
@@ -976,11 +985,11 @@ public class Board : MonoBehaviour
 
                 string piece = ("" + squares[i + (j * offset[k])].piece[0]).ToUpper();
 
-                if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Friendly Piece
+                if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != GameManager.instance.white) // Friendly Piece
                 {
                     break;
                 }
-                else if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Enemy Piece
+                else if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == GameManager.instance.white) // Enemy Piece
                 {
                     if (piece.Equals("R") || piece.Equals("Q"))
                     {
@@ -1032,11 +1041,11 @@ public class Board : MonoBehaviour
                 }
                 string piece = ("" + squares[i + (j * offset[k])].piece).ToUpper();
 
-                if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == white) // Freindly Piece
+                if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != GameManager.instance.white) // Freindly Piece
                 {
                     break;
                 }
-                else if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) != white) // Enemy Piece
+                else if (!squares[i + (j * offset[k])].IsEmpty() && Char.IsUpper(squares[i + (j * offset[k])].piece[0]) == GameManager.instance.white) // Enemy Piece
                 {
                     if (piece.Equals("B") || piece.Equals("Q"))
                     {
@@ -1060,7 +1069,7 @@ public class Board : MonoBehaviour
         foreach (int j in offset)
         {
             if (i + j > 63 || i + j < 0) continue;
-            if (squares[i + j].piece.ToUpper().Equals("P") && Char.IsUpper(squares[i + j].piece[0]) != white)
+            if (squares[i + j].piece.ToUpper().Equals("P") && Char.IsUpper(squares[i + j].piece[0]) == GameManager.instance.white)
             {
                 return true;
             }
@@ -1074,11 +1083,173 @@ public class Board : MonoBehaviour
         foreach (int j in offset)
         {
             if (i + j > 63 || i + j < 0) continue;
-            if (squares[i + j].piece.ToUpper().Equals("N") && Char.IsUpper(squares[i + j].piece[0]) != white)
+            if (squares[i + j].piece.ToUpper().Equals("N") && Char.IsUpper(squares[i + j].piece[0]) == GameManager.instance.white)
             {
                 return true;
             }
         }
         return false;
+    }
+
+    private void CheckDiagnolPins(int i, Square square, int kingIndex)
+    {
+        bool stopAtA = false;
+        bool stopAtH = false;
+        int[] offset;
+
+        bool mod9 = ((i % 9) == (kingIndex % 9));
+        bool mod7 = ((i % 7) == (kingIndex % 7));
+
+        bool pinPossible = (mod9 || mod7);
+
+        // Get correct offsets
+        if (square.position[0] == 'a')
+        {
+            stopAtH = true;
+            offset = new int[] { -7, 9 };
+        }
+        else if (square.position[0] == 'h')
+        {
+            stopAtA = true;
+            offset = new int[] { 7, -9 };
+        }
+        else
+        {
+            stopAtA = true;
+            stopAtH = true;
+            offset = new int[] { 9, -9, 7, -7 };
+        }
+
+        for (int k = 0; k < offset.Length; k++)
+        {
+            bool pathBlocked = false;
+            int possiblePinnedPiece = -1;
+            for (int j = 1; j < 9; j++)
+            {
+                int index = i + (j * offset[k]);
+
+                if (index < 0 || index > 63) break;
+
+                if (squares[index].IsEmpty() && !pathBlocked) // Square is empty
+                {
+                    attackedSquares.Add(index);
+                }
+                else if (Char.IsUpper(squares[index].piece[0]) != GameManager.instance.white) // Contains a freindly piece
+                {
+                    break; // ?
+                }
+                else if (Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white) // Contains a friendly piece. There is some condition here. 
+                {
+
+                    if (!pathBlocked && squares[index].piece.ToUpper().Equals("K")) // This is just a check.
+                    { checkCount++; break; }
+                    else if (pathBlocked && squares[index].piece.ToUpper().Equals("K")) // This is when a piece is pinned
+                    {
+                        pinnedPieces.Add(possiblePinnedPiece);
+                        break;
+                    }
+                    else if (!pinPossible) break;
+                    else if (!pathBlocked)
+                    {
+                        pathBlocked = true;
+                        possiblePinnedPiece = index;
+                        attackedSquares.Add(index);
+                    }
+                    else if (pathBlocked && !squares[index].piece.ToUpper().Equals("K")) // Two friendly pieces protect king from pin
+                    {
+                        break;
+                    }
+                }
+
+                if (stopAtA && squares[index].position[0] == 'a')
+                    break;
+                else if (stopAtH && squares[index].position[0] == 'h')
+                    break;
+            }
+        }
+    }
+
+    private async void CheckHorizontalPins(int i, int kingIndex, Square square)
+    {
+        int squaresToTheLeft = i % 8;
+        int squaresToTheRight = 8 - (squaresToTheLeft + 1); // The 1 is to account for the square the piece is on
+
+        List<int> offsetsToTheLeft = new List<int>();
+        List<int> offsetsToTheRight = new List<int>();
+
+        for (int index = 1; index <= squaresToTheRight; index++)
+        {
+            offsetsToTheRight.Add(i + index);
+        }
+        for (int index = 1; index <= squaresToTheLeft; index++)
+        {
+            offsetsToTheLeft.Add(i - index);
+        }
+
+        bool pinPossible = (offsetsToTheLeft.Contains(kingIndex) || offsetsToTheRight.Contains(kingIndex));
+
+        GetAttackedPoints(offsetsToTheLeft, kingIndex, pinPossible);
+        GetAttackedPoints(offsetsToTheRight, kingIndex, pinPossible);
+    }
+
+    private async void CheckVerticalPins(int i, int kingIndex, Square square)
+    {
+        int squaresAbove = i / 8;
+        int squaresBelow = 8 - (squaresAbove + 1); // The 1 is to account for the square the piece is on
+
+        List<int> upSquaresToCheckList = new List<int>();
+        List<int> downSquaresToCheckList = new List<int>();
+
+        for (int j = 1; j < (int)(i / 8) + 1; j++)
+        {
+            downSquaresToCheckList.Add(i - (j * 8));
+        }
+        for (int j = 1; j < 8 - (int)(((i) / 8)); j++)
+        {
+            upSquaresToCheckList.Add(i + (j * 8));
+        }
+
+        bool pinPossible = (upSquaresToCheckList.Contains(kingIndex) || downSquaresToCheckList.Contains(kingIndex));
+
+        GetAttackedPoints(upSquaresToCheckList, kingIndex, pinPossible);
+        GetAttackedPoints(downSquaresToCheckList, kingIndex, pinPossible);
+    }
+
+    private void GetAttackedPoints(List<int> offsets, int kingIndex, bool pinPossible)
+    {
+        int possiblePinnedPiece = -1;
+        bool pathBlocked = false;
+        foreach (int index in offsets)
+        {
+            if (squares[index].IsEmpty() && !pathBlocked) // Square is empty
+            {
+                attackedSquares.Add(index);
+            }
+            else if (Char.IsUpper(squares[index].piece[0]) != GameManager.instance.white) // Contains a freindly piece
+            {
+                break; // ?
+            }
+            else if (Char.IsUpper(squares[index].piece[0]) == GameManager.instance.white) // Contains an enemy piece. There is some condition here. 
+            {
+                if (!pathBlocked && index == kingIndex) // This is just a check.
+                { checkCount++; break; }
+                else if (pathBlocked && index == kingIndex) // This is when a piece is pinned
+                {
+                    pinnedPieces.Add(possiblePinnedPiece);
+                    break;
+                }
+                else if (!pinPossible) break;
+                else if (!pathBlocked)
+                {
+                    pathBlocked = true;
+                    possiblePinnedPiece = index;
+                    attackedSquares.Add(index);
+                }
+                else if (pathBlocked && kingIndex != index) // Two friendly pieces protect king from pin
+                {
+                    break;
+                }
+            }
+        }
     }
 }

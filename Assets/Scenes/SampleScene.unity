@@ -269,7 +269,7 @@ MonoBehaviour:
   blackColor: {r: 0.6313726, g: 0.3764706, b: 0.16862746, a: 0}
   whiteColor: {r: 1, g: 1, b: 1, a: 0}
   square: {fileID: 3286373021418586436, guid: 944d7993284c3b78cb6c75ae37869c0e, type: 3}
-  fenPerm: rnbqkbnrpppppppp8888PPPPPPPPRNBQKBNR
+  fenPerm: b2r2b182RBN3r1BKB2r2RBR2k8b73r3b
   canvas: {fileID: 1120028246}
   piece: {fileID: 5957902517680739422, guid: 40456b523c93b84848592e533cd34fc9, type: 3}
 --- !u!114 &528804521
@@ -287,7 +287,6 @@ MonoBehaviour:
   squares: []
   squaresList: []
   fen: 
-  white: 0
   stalemate: 0
   checkmate: 0
   sum: 0
