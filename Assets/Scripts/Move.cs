@@ -6,8 +6,8 @@ public class Move
 {
     public Square original;
     public Square newSquare;
-    public string pieceOriginal;
-    public string pieceNew;
+    public char pieceOriginal;
+    public char pieceNew;
     public string castle;
     public bool isCastle;
     public bool pawnPromote;
@@ -27,8 +27,8 @@ public class Move
         this.original = original;
         this.newSquare = newSquare;
         this.index = index;
-        pieceOriginal = "" + original.piece;
-        pieceNew = "" + newSquare.piece;
+        pieceOriginal = original.piece;
+        pieceNew = newSquare.piece;
         pawnPromote = false;
         tookOppositeColor = false;
     }

@@ -233,6 +233,7 @@ GameObject:
   - component: {fileID: 528804519}
   - component: {fileID: 528804520}
   - component: {fileID: 528804521}
+  - component: {fileID: 528804522}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -266,10 +267,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6e3d9c9aa5cb09d99d090a4efa494b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blackColor: {r: 0.6313726, g: 0.3764706, b: 0.16862746, a: 0}
-  whiteColor: {r: 1, g: 1, b: 1, a: 0}
+  blackColor: {r: 0.7264151, g: 0.4829313, b: 0.28439835, a: 0}
+  whiteColor: {r: 0.9245283, g: 0.8768413, b: 0.71084017, a: 0}
   square: {fileID: 3286373021418586436, guid: 944d7993284c3b78cb6c75ae37869c0e, type: 3}
-  fenPerm: b2r2b182RBN3r1BKB2r2RBR2k8b73r3b
+  fenPerm: rnbqkbnrpppppppp8888PPPPPPPPRNBQKBNR
   canvas: {fileID: 1120028246}
   piece: {fileID: 5957902517680739422, guid: 40456b523c93b84848592e533cd34fc9, type: 3}
 --- !u!114 &528804521
@@ -290,6 +291,18 @@ MonoBehaviour:
   stalemate: 0
   checkmate: 0
   sum: 0
+--- !u!114 &528804522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 528804518}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28b1f498aa3e1e95889103d2cae80fdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1113839253
 GameObject:
   m_ObjectHideFlags: 0

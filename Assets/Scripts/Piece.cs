@@ -35,7 +35,7 @@ public class Piece : MonoBehaviour
             GameObject closestObjectToMouse = GetNearestSquare();
             Move[] moves = GameManager.instance.board.GetLegalMoves();
 
-            
+
 
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
             Debug.Log(move.ToString());
@@ -47,8 +47,8 @@ public class Piece : MonoBehaviour
                 if (i.ToString().Equals(moveStr))
                 {
                     Debug.Log(i);
-                    
-                    transform.position = new Vector3(closestObjectToMouse.transform.position.x, closestObjectToMouse.transform.position.y ,closestObjectToMouse.transform.position.z - 0.01f);
+
+                    transform.position = new Vector3(closestObjectToMouse.transform.position.x, closestObjectToMouse.transform.position.y, closestObjectToMouse.transform.position.z - 0.01f);
                     if (i.isCastle)
                     {
                         i.castleRook.transform.position = i.newRookPosition;
@@ -57,7 +57,7 @@ public class Piece : MonoBehaviour
                     {
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
-                    
+
                     // closestObjectToMouse.GetComponent<Square>().pieceObj = (GameObject)Instantiate(gameObject, closestObjectToMouse.gameObject.transform.position, Quaternion.identity);
 
                     i.newSquare.pieceObj = i.original.pieceObj;
@@ -65,7 +65,7 @@ public class Piece : MonoBehaviour
                     GameManager.instance.board.MakeMove(i);
                     this.hasMoved = true;
 
-                    
+
                     if (i.pawnPromote)
                         PromotePawn(i.newSquare.pieceObj, move.newSquare.gameObject, GameManager.instance.white);
 
@@ -89,13 +89,13 @@ public class Piece : MonoBehaviour
                 Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);
                 Debug.Log(computerMove.ToString());
 
-                
+
                 computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z - 0.01f);
-                
+
                 // Change the position of the original object to where it should be after the move
-                
+
                 // Destroy the piece that is being taken if present.
-                if (!computerMove.newSquare.piece.Equals(""))
+                if (computerMove.newSquare.piece != '\0')
                 {
                     Debug.Log("Destroying Piece at " + computerMove.newSquare.position);
                     Debug.Log(computerMove.newSquare.piece);
@@ -108,7 +108,7 @@ public class Piece : MonoBehaviour
                 computerMove.original.pieceMoved = true;
                 // Make the move on the board array
                 GameManager.instance.board.MakeMove(computerMove);
-                
+
                 // Check pawn promotion
                 if (computerMove.pawnPromote)
                     PromotePawn(computerMove.newSquare.pieceObj, computerMove.newSquare.gameObject, GameManager.instance.white);
@@ -143,10 +143,10 @@ public class Piece : MonoBehaviour
         float closestDistance = 10000f;
         for (int i = 0; i < GameManager.instance.board.squares.Length; i++)
         {
-            float distance = Vector3.Distance(Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), 
-                                                                             new Vector3(GameManager.instance.board.squares[i].gameObject.transform.position.x, 
+            float distance = Vector3.Distance(Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)),
+                                                                             new Vector3(GameManager.instance.board.squares[i].gameObject.transform.position.x,
                                                                              GameManager.instance.board.squares[i].gameObject.transform.position.y, 0f));
-            if (distance <  closestDistance)
+            if (distance < closestDistance)
             {
                 closestDistance = distance;
                 closestObjectToMouse = GameManager.instance.board.squares[i].gameObject;
@@ -165,9 +165,9 @@ public class Piece : MonoBehaviour
                 controllingPiece = true;
                 originalSquare = GetNearestSquare().GetComponent<Square>();
             }
-            
+
         }
     }
 
-    
+
 }

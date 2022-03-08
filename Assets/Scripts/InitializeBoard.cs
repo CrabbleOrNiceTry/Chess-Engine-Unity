@@ -27,6 +27,7 @@ public class InitializeBoard : MonoBehaviour
 
     void Start()
     {
+        fenPerm = fenPerm.Replace("/", "");
         float originalX = -10f;
         float originaly = 10f;
         bool black = false;
@@ -60,7 +61,7 @@ public class InitializeBoard : MonoBehaviour
                 temp.GetComponent<Square>().SetPosition((new string((char)(j + 97), 1) + "" + (7 - i + 1)));
                 temp.GetComponent<Square>().index = count;
                 if (!noPiece)
-                    temp.GetComponent<Square>().piece = "" + fen[fenCount];
+                    temp.GetComponent<Square>().piece = fen[fenCount];
                 GameManager.instance.board.squaresList.Add(temp.GetComponent<Square>());
                 xPos += size;
                 if (!noFenSub)

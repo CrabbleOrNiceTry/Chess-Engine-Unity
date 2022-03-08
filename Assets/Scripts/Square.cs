@@ -7,7 +7,7 @@ public class Square : MonoBehaviour
 
     // position as in e8 or d8 or f4
     public string position;
-    public string piece;
+    public char piece;
     public GameObject pieceObj;
     public bool isPinned;
     public bool pieceMoved;
@@ -16,7 +16,7 @@ public class Square : MonoBehaviour
 
     void Awake()
     {
-        piece = "";
+        piece = '\0';
         isPinned = false;
     }
 
@@ -27,6 +27,6 @@ public class Square : MonoBehaviour
 
     public bool IsEmpty()
     {
-        return piece.Equals("");
+        return piece == '\0';
     }
 }
