@@ -36,7 +36,6 @@ public class Piece : MonoBehaviour
             Move[] moves = GameManager.instance.board.GetLegalMoves();
 
 
-
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
             Debug.Log(move.ToString());
             string moveStr = move.ToString();
@@ -46,14 +45,13 @@ public class Piece : MonoBehaviour
             {
                 if (i.ToString().Equals(moveStr))
                 {
-                    Debug.Log(i);
 
                     transform.position = new Vector3(closestObjectToMouse.transform.position.x, closestObjectToMouse.transform.position.y, closestObjectToMouse.transform.position.z - 0.01f);
                     if (i.isCastle)
                     {
                         i.castleRook.transform.position = i.newRookPosition;
                     }
-                    if (!closestObjectToMouse.GetComponent<Square>().piece.Equals(""))
+                    if (closestObjectToMouse.GetComponent<Square>().piece != '\0')
                     {
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
@@ -84,6 +82,12 @@ public class Piece : MonoBehaviour
                 int depth = 4;
                 // Initialize some values
                 GameManager.instance.computer.PrepareSearch(GameManager.instance.board);
+
+                // var m = GameManager.instance.board.GetLegalMoves();
+                // foreach (var i in m)
+                // {
+                //     Debug.Log("Move: " + i.ToString());
+                // }
 
                 // Search for the best move 
                 Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);

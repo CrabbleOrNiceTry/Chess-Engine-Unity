@@ -270,13 +270,13 @@ public class AI : MonoBehaviour
             try
             {
                 if (Char.IsLower(board.squares[i].piece))
-                    sum += pieceVal[board.squares[i].piece] - positionalVal[board.squares[i].piece][board.GetIndex(board.squares[i].position)];
+                    sum += pieceVal[board.squares[i].piece] - positionalVal[board.squares[i].piece][i];
                 else
-                    sum += pieceVal[board.squares[i].piece] + positionalVal[board.squares[i].piece][board.GetIndex(board.squares[i].position)];
+                    sum += pieceVal[board.squares[i].piece] + positionalVal[board.squares[i].piece][i];
             }
             catch (Exception e)
             {
-                throw new Exception("The given key was not found in the dictionary: " + i + ". Error: " + e.Message);
+                throw new Exception("The given key was not found in the dictionary: " + i + ". Piece: " + board.squares[i].piece + ". Error: " + e.Message);
             }
         }
         return sum;
