@@ -30,10 +30,10 @@ public class MoveGenerationTest : MonoBehaviour
         {
             GameManager.instance.board.MakeMove(move);
             int tempSum = TestMoveGeneration(depth - 1, originalDepth);
-            // if (depth == originalDepth)
-            // {
-            //     universalString += move.ToString() + ": " + tempSum + "\n";
-            // }
+            if (depth == originalDepth)
+            {
+                universalString += move.ToString() + ": " + tempSum + "\n";
+            }
             sum += tempSum;
             GameManager.instance.board.UnmakeMove(move);
         }
@@ -52,7 +52,7 @@ public class MoveGenerationTest : MonoBehaviour
                 watch.Stop();
                 Debug.Log("At " + i + "ply: " + foo + " nodes. Operation performed in " + watch.ElapsedMilliseconds + "ms.");
             }
-            // File.WriteAllText("Assets/Resources/MoveGenerationTest.txt", universalString);
+            File.WriteAllText("Assets/Resources/MoveGenerationTest.txt", universalString);
             // int sum = 0;
             // for (int i = 1; i <= 4; i++)
             // {

@@ -41,6 +41,12 @@ public class Board : MonoBehaviour
     private Dictionary<int, HashSet<int>> knightOffsetDictionary;
     private Dictionary<int, HashSet<int>> pinnedPieceDictionary;
 
+    private Dictionary<int, HashSet<int>> whitePawnAttackDictionary;
+    private Dictionary<int, HashSet<int>> whitePawnMoveDictionary;
+    private Dictionary<int, HashSet<int>> blackPawnAttackDictionary;
+    private Dictionary<int, HashSet<int>> blackPawnMoveDictionary;
+
+
     private HashSet<int> kingCheckedSquares;
 
     private HashSet<int> attackedSquares;
@@ -73,6 +79,10 @@ public class Board : MonoBehaviour
         kingOffsetDictionary = new Dictionary<int, int[]>();
         knightOffsetDictionary = new Dictionary<int, HashSet<int>>();
         pinnedPieceDictionary = new Dictionary<int, HashSet<int>>();
+        whitePawnAttackDictionary = new Dictionary<int, HashSet<int>>();
+        whitePawnMoveDictionary = new Dictionary<int, HashSet<int>>();
+        blackPawnAttackDictionary = new Dictionary<int, HashSet<int>>();
+        blackPawnMoveDictionary = new Dictionary<int, HashSet<int>>();
         // pieceDictionary = new Dictionary<char, List<int>>();
         stalemate = false;
         checkmate = false;
@@ -128,6 +138,7 @@ public class Board : MonoBehaviour
             CreateVerticalDictionary(i);
             CreateKnightDictionary(i);
             CreateKingDictionary(i, squares[i]);
+            CreatePawnDictionary(i, squares[i]);
         }
     }
 
@@ -240,6 +251,46 @@ public class Board : MonoBehaviour
         allSquaresToCheck.Add(rightSquaresToCheckList);
 
         offsetHorizontalDictionary.Add(index, allSquaresToCheck);
+    }
+
+    private void CreatePawnDictionary(int i, Square square)
+    {
+        HashSet<int> whiteAttacks = new HashSet<int>();
+        HashSet<int> whiteOffsets = new HashSet<int>();
+        HashSet<int> blackAttacks = new HashSet<int>();
+        HashSet<int> blackOffsets = new HashSet<int>();
+
+        if (square.position[0] == 'a')
+        {
+            whiteAttacks.Add(i + -7);
+            blackAttacks.Add(i + 9);
+        }
+        else if (square.position[0] == 'h')
+        {
+            whiteAttacks.Add(i + -9);
+            blackAttacks.Add(i + 7);
+        }
+        else
+        {
+            whiteAttacks.Add(i - 9);
+            whiteAttacks.Add(i - 7);
+            blackAttacks.Add(i + 9);
+            blackAttacks.Add(i + 7);
+        }
+        if (square.position[1] == '2')
+        {
+            whiteOffsets.Add(i + -16);
+        }
+        else if (square.position[1] == '7')
+        {
+            blackOffsets.Add(i + 16);
+        }
+        whiteOffsets.Add(i - 8);
+        blackOffsets.Add(i + 8);
+        whitePawnAttackDictionary.Add(i, whiteAttacks);
+        whitePawnMoveDictionary.Add(i, whiteOffsets);
+        blackPawnAttackDictionary.Add(i, blackAttacks);
+        blackPawnMoveDictionary.Add(i, blackOffsets);
     }
 
     private void CreateKnightDictionary(int index)
@@ -823,21 +874,24 @@ public class Board : MonoBehaviour
 
         int mult = (GameManager.instance.white ? -1 : 1);
 
-        List<int> offset = new List<int>();
-        List<int> attackOffset = new List<int>();
+        HashSet<int> attackOffset = (GameManager.instance.white ? whitePawnAttackDictionary[i] : blackPawnAttackDictionary[i]);
+        HashSet<int> offset = (GameManager.instance.white ? whitePawnMoveDictionary[i] : blackPawnMoveDictionary[i]);
 
-        if (square.position[0] == 'a' && GameManager.instance.white) attackOffset.Add(i + -7);
-        else if (square.position[0] == 'h' && GameManager.instance.white) attackOffset.Add(i + -9);
-        else if (square.position[0] == 'a' && !GameManager.instance.white) attackOffset.Add(i + 9);
-        else if (square.position[0] == 'h' && !GameManager.instance.white) attackOffset.Add(i + 7);
-        else
-        {
-            attackOffset.Add(i + 9 * mult);
-            attackOffset.Add(i + 7 * mult);
-        }
-        if (square.position[1] == '2' && GameManager.instance.white) offset.Add(i + -16);
-        else if (square.position[1] == '7' && !GameManager.instance.white) offset.Add(i + 16);
-        offset.Add(i + 8 * mult);
+        // List<int> offset = new List<int>();
+        // List<int> attackOffset = new List<int>();
+
+        // if (square.position[0] == 'a' && GameManager.instance.white) attackOffset.Add(i + -7);
+        // else if (square.position[0] == 'h' && GameManager.instance.white) attackOffset.Add(i + -9);
+        // else if (square.position[0] == 'a' && !GameManager.instance.white) attackOffset.Add(i + 9);
+        // else if (square.position[0] == 'h' && !GameManager.instance.white) attackOffset.Add(i + 7);
+        // else
+        // {
+        //     attackOffset.Add(i + 9 * mult);
+        //     attackOffset.Add(i + 7 * mult);
+        // }
+        // if (square.position[1] == '2' && GameManager.instance.white) offset.Add(i + -16);
+        // else if (square.position[1] == '7' && !GameManager.instance.white) offset.Add(i + 16);
+        // offset.Add(i + 8 * mult);
 
         // If the pawn is pinned check if the pinning piece can be taken by pawn
         if (pinnedPieces.Contains(i))
@@ -1226,19 +1280,21 @@ public class Board : MonoBehaviour
 
     private void CheckPawnAttacks(int index, int kingIndex, Square square)
     {
-        int mult = (GameManager.instance.white ? 1 : -1);
+        // int mult = (GameManager.instance.white ? 1 : -1);
 
-        List<int> attackOffset = new List<int>();
+        HashSet<int> attackOffset = (GameManager.instance.white ? blackPawnAttackDictionary[index] : whitePawnAttackDictionary[index]);
 
-        if (square.position[0] == 'a' && GameManager.instance.white) attackOffset.Add(-7);
-        else if (square.position[0] == 'h' && GameManager.instance.white) attackOffset.Add(-9);
-        else if (square.position[0] == 'a' && !GameManager.instance.white) attackOffset.Add(9);
-        else if (square.position[0] == 'h' && !GameManager.instance.white) attackOffset.Add(7);
-        else
-        {
-            attackOffset.Add(9 * mult);
-            attackOffset.Add(7 * mult);
-        }
+        // List<int> attackOffset = new List<int>();
+
+        // if (square.position[0] == 'a' && GameManager.instance.white) attackOffset.Add(-7);
+        // else if (square.position[0] == 'h' && GameManager.instance.white) attackOffset.Add(-9);
+        // else if (square.position[0] == 'a' && !GameManager.instance.white) attackOffset.Add(9);
+        // else if (square.position[0] == 'h' && !GameManager.instance.white) attackOffset.Add(7);
+        // else
+        // {
+        //     attackOffset.Add(9 * mult);
+        //     attackOffset.Add(7 * mult);
+        // }
         foreach (var i in attackOffset)
         {
             attackedSquares.Add(i);
