@@ -514,6 +514,7 @@ public class Board : MonoBehaviour
             }
         }
         GetKingMoves(squares[GameManager.instance.white ? whiteKingIndex : blackKingIndex], GameManager.instance.white ? whiteKingIndex : blackKingIndex);
+        // if (checkCount == 0) GetCastleMove();
     }
 
     /*
@@ -590,10 +591,10 @@ public class Board : MonoBehaviour
         }
 
         // For debugging purposes, in the likely scenario something breaks and this happens. 
-        if (Char.ToUpper(move.newSquare.piece) == 'K' && Char.ToUpper(move.original.piece) != 'K')
-        {
-            Debug.Log("King taken by: " + move.original.piece + " by performing move: " + move.ToString());
-        }
+        // if (Char.ToUpper(move.newSquare.piece) == 'K' && Char.ToUpper(move.original.piece) != 'K')
+        // {
+        //     Debug.Log("King taken by: " + move.original.piece + " by performing move: " + move.ToString());
+        // }
 
         if (Char.ToUpper(move.original.piece) == 'P')
         {
@@ -712,7 +713,6 @@ public class Board : MonoBehaviour
                 move.original.piece = 'P';
             }
             move.newSquare.piece = move.pieceNew;
-            move.pawnPromote = false;
         }
         else
         {
@@ -735,7 +735,7 @@ public class Board : MonoBehaviour
             if (move.original.piece == 'k')
                 blackKingIndex = move.original.index;
             blackPieces.Add(move.original.index);
-            var remove = blackPieces.Remove(move.newSquare.index);
+            blackPieces.Remove(move.newSquare.index);
             if (move.tookOppositeColor)
             {
                 whitePieces.Add(move.newSquare.index);
@@ -755,7 +755,7 @@ public class Board : MonoBehaviour
             // Now check if their are any pieces in the way.
             for (int i = 1; i < 4; i++)
             {
-                if (!squares[i].IsEmpty() && attackedSquares.Contains(i))
+                if (!squares[i].IsEmpty() || attackedSquares.Contains(i))
                 {
                     return;
                 }
@@ -773,9 +773,9 @@ public class Board : MonoBehaviour
         if (squares[7].pieceMoved == false && squares[4].pieceMoved == false)
         {
             // Now check if their are any pieces in the way.
-            for (int i = 4; i > 6; i++)
+            for (int i = 4; i <= 6; i++)
             {
-                if (!squares[i].IsEmpty() && attackedSquares.Contains(i))
+                if (!squares[i].IsEmpty() || attackedSquares.Contains(i))
                 {
                     return;
                 }
@@ -793,9 +793,9 @@ public class Board : MonoBehaviour
         if (squares[56].pieceMoved == false && squares[60].pieceMoved == false)
         {
             // Now check if their are any pieces in the way.
-            for (int i = 57; i < 60; i++)
+            for (int i = 58; i < 60; i++)
             {
-                if (!squares[i].IsEmpty() && attackedSquares.Contains(i))
+                if (!squares[i].IsEmpty() || attackedSquares.Contains(i))
                 {
                     return;
                 }
@@ -815,7 +815,7 @@ public class Board : MonoBehaviour
             // Now check if their are any pieces in the way.
             for (int i = 61; i < 63; i++)
             {
-                if (!squares[i].IsEmpty() && attackedSquares.Contains(i))
+                if (!squares[i].IsEmpty() || attackedSquares.Contains(i))
                 {
                     return;
                 }
@@ -832,10 +832,13 @@ public class Board : MonoBehaviour
     */
     private void GetCastleMove()
     {
-        if (checkCount > 0) return;
-        CheckWhiteKingSideCastle();
+        if (GameManager.instance.white)
+        {
+            CheckWhiteKingSideCastle();
+            CheckWhiteQueenSideCastle();
+            return;
+        }
         CheckBlackKingSideCastle();
-        CheckWhiteQueenSideCastle();
         CheckBlackQueenSideCastle();
 
     }
@@ -1284,17 +1287,6 @@ public class Board : MonoBehaviour
 
         HashSet<int> attackOffset = (GameManager.instance.white ? blackPawnAttackDictionary[index] : whitePawnAttackDictionary[index]);
 
-        // List<int> attackOffset = new List<int>();
-
-        // if (square.position[0] == 'a' && GameManager.instance.white) attackOffset.Add(-7);
-        // else if (square.position[0] == 'h' && GameManager.instance.white) attackOffset.Add(-9);
-        // else if (square.position[0] == 'a' && !GameManager.instance.white) attackOffset.Add(9);
-        // else if (square.position[0] == 'h' && !GameManager.instance.white) attackOffset.Add(7);
-        // else
-        // {
-        //     attackOffset.Add(9 * mult);
-        //     attackOffset.Add(7 * mult);
-        // }
         foreach (var i in attackOffset)
         {
             attackedSquares.Add(i);

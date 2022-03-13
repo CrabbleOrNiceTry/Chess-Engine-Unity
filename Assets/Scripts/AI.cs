@@ -164,8 +164,7 @@ public class AI : MonoBehaviour
                 }
                 else if (board.stalemate)
                     return 0;
-                HashSet<int> pieceIndex = new HashSet<int>();
-                pieceIndex = board.pieceIndex;
+                HashSet<int> pieceIndex = board.pieceIndex;
                 return CalculatePos(legalMoves, pieceIndex);
             }
             else if (color == "BLACK")
@@ -179,8 +178,7 @@ public class AI : MonoBehaviour
                 }
                 else if (board.stalemate)
                     return 0;
-                HashSet<int> pieceIndex = new HashSet<int>();
-                pieceIndex = board.pieceIndex;
+                HashSet<int> pieceIndex = board.pieceIndex;
                 return -CalculatePos(legalMoves, pieceIndex);
             }
         }
@@ -200,13 +198,12 @@ public class AI : MonoBehaviour
                 board.UnmakeMove(move);
                 max = Mathf.Max(max, currentEval); // 
 
-                if (max != infinity)
-                {
-                    alpha = Mathf.Max(alpha, max);
 
-                    if (alpha >= beta)
-                        break;
-                }
+                if (max >= beta)
+                    break;
+
+                alpha = Mathf.Max(alpha, max);
+
                 if (max > bestValueMove)
                 {
                     bestValueMove = max;
@@ -229,14 +226,13 @@ public class AI : MonoBehaviour
                 board.UnmakeMove(move);
 
                 min = Mathf.Min(min, currentEval);
-                if (min != -infinity)
-                {
-                    // Alpha Beta pruning -- not the problem.
-                    beta = Mathf.Min(beta, min);
+                // Alpha Beta pruning -- not the problem.
 
-                    if (beta <= alpha)
-                        break;
-                }
+                if (min <= alpha)
+                    break;
+
+                beta = Mathf.Min(beta, min);
+
                 // Can't be this
                 if (min < bestValueMove)
                 {
