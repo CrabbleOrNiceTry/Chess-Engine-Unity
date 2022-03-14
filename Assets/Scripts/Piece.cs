@@ -37,7 +37,6 @@ public class Piece : MonoBehaviour
 
 
             Move move = new Move(originalSquare, closestObjectToMouse.GetComponent<Square>(), -1);
-            Debug.Log(move.ToString());
             string moveStr = move.ToString();
             bool moveFound = false;
 
@@ -91,7 +90,6 @@ public class Piece : MonoBehaviour
 
                 // Search for the best move 
                 Move computerMove = GameManager.instance.computer.GetBestMove(depth, depth, true, "BLACK", -999999f, 999999f);
-                Debug.Log(computerMove.ToString());
 
 
                 computerMove.original.pieceObj.transform.position = new Vector3(computerMove.newSquare.transform.position.x, computerMove.newSquare.transform.position.y, computerMove.newSquare.transform.position.z - 0.01f);
@@ -118,6 +116,7 @@ public class Piece : MonoBehaviour
                     PromotePawn(computerMove.newSquare.pieceObj, computerMove.newSquare.gameObject, GameManager.instance.white);
 
                 FindObjectOfType<Sound>().PlayMoveSound();
+                GameManager.instance.board.PrintBoard("Assets/Resources/LastMoveBoard.txt");
             }
         }
         else if (controllingThisPiece)
