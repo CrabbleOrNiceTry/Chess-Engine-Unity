@@ -406,6 +406,33 @@ public class Board : MonoBehaviour
         }
     }
 
+    // Takes current board and produces fen value
+    private string CreateFen()
+    {
+        string fen = "";
+        int countEmpty = 0;
+        int count = 0;
+        foreach (Square square in squares)
+        {
+            count++;
+            if (count % 8 == 0)
+            {
+                fen += "/";
+            }
+            if (square.IsEmpty())
+            {
+                countEmpty++;
+            }
+            else if (countEmpty != 0)
+            {
+                fen += countEmpty.ToString();
+                fen += square.piece;
+                countEmpty = 0;
+            }
+        }
+        return fen;
+    }
+
     // Function to be used for debugging to see board output
     // when something goes wrong.
     public void PrintBoard(string path)
@@ -439,6 +466,7 @@ public class Board : MonoBehaviour
         }
         stringToPrint += "\n";
         stringToPrint += " a | b | c | d | e | f | g | h ";
+        stringToPrint += "\n\n\nFen: " + CreateFen();
         File.WriteAllText(path, stringToPrint);
 
     }

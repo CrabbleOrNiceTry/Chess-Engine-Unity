@@ -15,6 +15,7 @@ public class AI : MonoBehaviour
 
     private Dictionary<char, float> pieceVal;
     private Dictionary<char, float[]> positionalVal;
+    private int nodesSearched;
     private float infinity;
 
 
@@ -145,6 +146,7 @@ public class AI : MonoBehaviour
         // This exists only to satisfy the tuple return
         bestMove = new Move(GameManager.instance.board.squares[1], GameManager.instance.board.squares[26], 0);
         throwAwayMove = new Move(GameManager.instance.board.squares[1], GameManager.instance.board.squares[26], 0);
+        nodesSearched = 0;
     }
 
     public float Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
@@ -153,16 +155,15 @@ public class AI : MonoBehaviour
 
         if (depth == 0 || legalMoves.Length == 0)
         {
-
             if (color == "WHITE")
             {
                 if (GameManager.instance.board.checkmate)
                 {
                     Debug.Log("Found Mate");
                     if (player)
-                        return -infinity;
-                    else
                         return infinity;
+                    else
+                        return -infinity;
                 }
                 else if (GameManager.instance.board.stalemate)
                     return 0;
@@ -200,18 +201,24 @@ public class AI : MonoBehaviour
 
                 // Recursively check next moves in line
                 float currentEval = Search(depth - 1, originalDepth, false, color, alpha, beta); // infinity
+                nodesSearched++;
                 GameManager.instance.board.UnmakeMove(move);
+
                 if (broken)
                 {
                     GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
                     return 1;
                 }
+
                 value = Mathf.Max(value, currentEval); // 
+                if (value != infinity)
+                {
+                    if (value >= beta)
+                        break;
 
-                if (value >= beta)
-                    break;
+                    alpha = Mathf.Max(alpha, value);
+                }
 
-                alpha = Mathf.Max(alpha, value);
 
                 if (value > bestValueMove)
                 {
@@ -232,20 +239,26 @@ public class AI : MonoBehaviour
 
                 // Recursively check next moves in line
                 float currentEval = Search(depth - 1, originalDepth, true, color, alpha, beta);
-
+                nodesSearched++;
                 GameManager.instance.board.UnmakeMove(move);
+
                 if (broken)
                 {
                     GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
                     return 1;
                 }
+
                 value = Mathf.Min(value, currentEval);
                 // Alpha Beta pruning -- not the problem.
 
-                if (value <= alpha)
-                    break;
+                if (value != -infinity)
+                {
+                    if (value <= alpha)
+                        break;
 
-                beta = Mathf.Min(beta, value);
+                    beta = Mathf.Min(beta, value);
+                }
+
 
                 // Can't be this
                 if (value < bestValueMove)
@@ -263,6 +276,7 @@ public class AI : MonoBehaviour
         // }
         bestMove = currentBestMove;
         GameManager.instance.board.GetLegalMoves();
+        Debug.Log(nodesSearched);
         return 0f;
     }
 
