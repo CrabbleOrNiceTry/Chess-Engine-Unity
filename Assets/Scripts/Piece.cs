@@ -99,7 +99,6 @@ public class Piece : MonoBehaviour
                 // Destroy the piece that is being taken if present.
                 if (computerMove.newSquare.piece != '\0')
                 {
-                    Debug.Log("Destroying Piece at " + computerMove.newSquare.position);
                     Debug.Log(computerMove.newSquare.piece);
                     computerMove.newSquare.pieceObj.SetActive(false);
                     // Destroy(computerMove.newSquare.pieceObj);

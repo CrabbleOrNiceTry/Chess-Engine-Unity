@@ -423,11 +423,14 @@ public class Board : MonoBehaviour
             {
                 countEmpty++;
             }
-            else if (countEmpty != 0)
+            else
             {
-                fen += countEmpty.ToString();
+                if (countEmpty != 0)
+                {
+                    fen += countEmpty.ToString();
+                    countEmpty = 0;
+                }
                 fen += square.piece;
-                countEmpty = 0;
             }
         }
         return fen;

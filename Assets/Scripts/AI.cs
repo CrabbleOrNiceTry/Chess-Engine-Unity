@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+
 public class AI : MonoBehaviour
 {
     private Board board;
@@ -149,44 +150,48 @@ public class AI : MonoBehaviour
         nodesSearched = 0;
     }
 
+    private float BaseCase(string color, bool player)
+    {
+        if (color == "WHITE")
+        {
+            if (GameManager.instance.board.checkmate)
+            {
+                Debug.Log("Found Mate");
+                if (player)
+                    return infinity;
+                else
+                    return -infinity;
+            }
+            else if (GameManager.instance.board.stalemate)
+                return 0;
+            return CalculatePos();
+        }
+        else
+        {
+            if (GameManager.instance.board.checkmate)
+            {
+                if (player)
+                {
+                    return -infinity;
+                }
+                else
+                {
+                    return infinity;
+                }
+            }
+            else if (GameManager.instance.board.stalemate)
+                return 0;
+            return -CalculatePos();
+        }
+    }
+
     public float Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
     {
-        Move[] legalMoves = GameManager.instance.board.GetLegalMoves();
 
+        Move[] legalMoves = GameManager.instance.board.GetLegalMoves();
         if (depth == 0 || legalMoves.Length == 0)
         {
-            if (color == "WHITE")
-            {
-                if (GameManager.instance.board.checkmate)
-                {
-                    Debug.Log("Found Mate");
-                    if (player)
-                        return infinity;
-                    else
-                        return -infinity;
-                }
-                else if (GameManager.instance.board.stalemate)
-                    return 0;
-                HashSet<int> pieceIndex = GameManager.instance.board.pieceIndex;
-                return CalculatePos();
-            }
-            else if (color == "BLACK")
-            {
-                if (GameManager.instance.board.checkmate)
-                {
-                    if (player)
-                    {
-                        return -infinity;
-                    }
-                    else
-                    {
-                        return infinity;
-                    }
-                }
-                else if (GameManager.instance.board.stalemate)
-                    return 0;
-                return -CalculatePos();
-            }
+            return BaseCase(color, player);
         }
 
         Move currentBestMove = new Move(GameManager.instance.board.squares[1], GameManager.instance.board.squares[26], 0);
@@ -204,11 +209,11 @@ public class AI : MonoBehaviour
                 nodesSearched++;
                 GameManager.instance.board.UnmakeMove(move);
 
-                if (broken)
-                {
-                    GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
-                    return 1;
-                }
+                // if (broken)
+                // {
+                //     GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
+                //     return 1;
+                // }
 
                 value = Mathf.Max(value, currentEval); // 
                 if (value != infinity)
@@ -242,11 +247,11 @@ public class AI : MonoBehaviour
                 nodesSearched++;
                 GameManager.instance.board.UnmakeMove(move);
 
-                if (broken)
-                {
-                    GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
-                    return 1;
-                }
+                // if (broken)
+                // {
+                //     GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
+                //     return 1;
+                // }
 
                 value = Mathf.Min(value, currentEval);
                 // Alpha Beta pruning -- not the problem.
@@ -275,14 +280,16 @@ public class AI : MonoBehaviour
         //     return (legalMoves[0], 0f);
         // }
         bestMove = currentBestMove;
-        GameManager.instance.board.GetLegalMoves();
-        Debug.Log(nodesSearched);
-        return 0f;
+        return (float)nodesSearched;
     }
 
     public Move GetBestMove(int depth, int originalDepth, bool player, string color, float alpha, float beta)
     {
-        Search(depth, originalDepth, player, color, alpha, beta);
+        DateTime start = DateTime.Now;
+        float nodesSearched = Search(depth, originalDepth, player, color, alpha, beta);
+        DateTime end = DateTime.Now;
+        TimeSpan duration = end.Subtract(start);
+        Debug.Log(nodesSearched + " nodes searched in " + duration.Milliseconds + "ms.");
         return bestMove;
     }
 
