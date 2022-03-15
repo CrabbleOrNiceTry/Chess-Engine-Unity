@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 0}
-  white: 1
+  white: 0
   computer: {fileID: 0}
 --- !u!20 &519420031
 Camera:
@@ -270,7 +270,7 @@ MonoBehaviour:
   blackColor: {r: 0.7264151, g: 0.4829313, b: 0.28439835, a: 0}
   whiteColor: {r: 0.9245283, g: 0.8768413, b: 0.71084017, a: 0}
   square: {fileID: 3286373021418586436, guid: 944d7993284c3b78cb6c75ae37869c0e, type: 3}
-  fenPerm: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR '
+  fenPerm: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
   canvas: {fileID: 1120028246}
   piece: {fileID: 5957902517680739422, guid: 40456b523c93b84848592e533cd34fc9, type: 3}
 --- !u!114 &528804521
@@ -300,7 +300,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 528804518}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 28b1f498aa3e1e95889103d2cae80fdf, type: 3}
   m_Name: 

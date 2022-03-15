@@ -16,6 +16,7 @@ public class AI : MonoBehaviour
 
     private Dictionary<char, float> pieceVal;
     private Dictionary<char, float[]> positionalVal;
+    private System.Diagnostics.Stopwatch stopWatch;
     private int nodesSearched;
     private float infinity;
 
@@ -26,6 +27,7 @@ public class AI : MonoBehaviour
         pieceVal = new Dictionary<char, float>();
         positionalVal = new Dictionary<char, float[]>();
         broken = false;
+        stopWatch = new System.Diagnostics.Stopwatch();
 
         #region Piece Values
         pieceVal.Add('P', 10.0f);
@@ -148,6 +150,7 @@ public class AI : MonoBehaviour
         bestMove = new Move(GameManager.instance.board.squares[1], GameManager.instance.board.squares[26], 0);
         throwAwayMove = new Move(GameManager.instance.board.squares[1], GameManager.instance.board.squares[26], 0);
         nodesSearched = 0;
+        stopWatch.Reset();
     }
 
     private float BaseCase(string color, bool player)
@@ -187,8 +190,9 @@ public class AI : MonoBehaviour
 
     public float Search(int depth, int originalDepth, bool player, string color, float alpha, float beta)
     {
-
+        // stopWatch.Start();
         Move[] legalMoves = GameManager.instance.board.GetLegalMoves();
+        // stopWatch.Stop();
         if (depth == 0 || legalMoves.Length == 0)
         {
             return BaseCase(color, player);
@@ -203,12 +207,10 @@ public class AI : MonoBehaviour
             {
                 // Make the move
                 GameManager.instance.board.MakeMove(move);
-
                 // Recursively check next moves in line
                 float currentEval = Search(depth - 1, originalDepth, false, color, alpha, beta); // infinity
                 nodesSearched++;
                 GameManager.instance.board.UnmakeMove(move);
-
                 // if (broken)
                 // {
                 //     GameManager.instance.board.PrintBoard("Assets/Resources/BrokenBoardDepth" + depth + ".txt");
@@ -285,11 +287,14 @@ public class AI : MonoBehaviour
 
     public Move GetBestMove(int depth, int originalDepth, bool player, string color, float alpha, float beta)
     {
-        DateTime start = DateTime.Now;
+        System.Diagnostics.Stopwatch nodesSearchedTime = new System.Diagnostics.Stopwatch();
+        nodesSearchedTime.Start();
         float nodesSearched = Search(depth, originalDepth, player, color, alpha, beta);
-        DateTime end = DateTime.Now;
-        TimeSpan duration = end.Subtract(start);
-        Debug.Log(nodesSearched + " nodes searched in " + duration.Milliseconds + "ms.");
+        nodesSearchedTime.Stop();
+        Debug.Log("Currently timed functions took " + GameManager.instance.board.stopWatch.ElapsedMilliseconds +
+                  "ms of a total search time of " + nodesSearchedTime.ElapsedMilliseconds + "ms. Approximately " + Convert.ToString((float)((float)GameManager.instance.board.stopWatch.ElapsedMilliseconds / (float)nodesSearchedTime.ElapsedMilliseconds) * 100) + "% of the total search time.");
+        GameManager.instance.board.stopWatch.Reset();
+        // Debug.Log(nodesSearched + " nodes searched in " + nodesSearchedTime.ElapsedMilliseconds + "ms.");
         return bestMove;
     }
 

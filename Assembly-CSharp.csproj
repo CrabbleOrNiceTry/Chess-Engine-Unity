@@ -57,6 +57,7 @@
      <None Include="Assets/Resources/BrokenBoardDepth1.txt" />
      <None Include="Assets/Resources/LastMoveBoard.txt" />
      <None Include="Assets/Resources/MoveGenerationTest.txt" />
+     <None Include="Assets/Resources/KingTakenBoard.txt" />
     <Reference Include="UnityEngine">
         <HintPath>/home/cbac/Unity/Hub/Editor/2020.3.30f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
