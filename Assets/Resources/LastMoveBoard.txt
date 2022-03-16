@@ -1,21 +1,21 @@
- r |   | b | q | k | b |   | r | 8
+ Rook, Black |   | Bishop, Black | Queen, Black | King, Black | Bishop, Black |   | Rook, Black | 8
 ————————————————————————————————
- p | p | p | p | p | p | p | p | 7
+ Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | 7
 ————————————————————————————————
-   |   | n |   |   | n |   |   | 6
+   |   | Knight, Black |   |   | Knight, Black |   |   | 6
 ————————————————————————————————
    |   |   |   |   |   |   |   | 5
 ————————————————————————————————
-   |   |   | P |   |   |   |   | 4
+   |   |   | Pawn, White |   |   |   |   | 4
 ————————————————————————————————
-   |   |   |   |   | N |   |   | 3
+   |   |   |   |   | Knight, White |   |   | 3
 ————————————————————————————————
- P | P | P |   | P | P | P | P | 2
+ Pawn, White | Pawn, White | Pawn, White |   | Pawn, White | Pawn, White | Pawn, White | Pawn, White | 2
 ————————————————————————————————
- R | N | B | Q | K | B |   | R | 1
+ Rook, White | Knight, White | Bishop, White | Queen, White | King, White | Bishop, White |   | Rook, White | 1
 ————————————————————————————————
 ————————————————————————————————
  a | b | c | d | e | f | g | h 
 
 
-Fen: r1bqkb1r/pppppppp/2n2n2/8/3P4/5N2/PPP1PPPP/RNBQKB1R/
+Fen: Rook, Black1Bishop, BlackQueen, BlackKing, BlackBishop, Black1Rook, Black/Pawn, BlackPawn, BlackPawn, BlackPawn, BlackPawn, BlackPawn, BlackPawn, BlackPawn, Black/2Knight, Black2Knight, Black2/8/3Pawn, White4/5Knight, White2/Pawn, WhitePawn, WhitePawn, White1Pawn, WhitePawn, WhitePawn, WhitePawn, White/Rook, WhiteKnight, WhiteBishop, WhiteQueen, WhiteKing, WhiteBishop, White1Rook, White/

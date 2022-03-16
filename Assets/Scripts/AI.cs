@@ -14,8 +14,8 @@ public class AI : MonoBehaviour
 
     private Move bestMove;
 
-    private Dictionary<char, float> pieceVal;
-    private Dictionary<char, float[]> positionalVal;
+    private Dictionary<PieceE, float> pieceVal;
+    private Dictionary<PieceE, float[]> positionalVal;
     private System.Diagnostics.Stopwatch stopWatch;
     private int nodesSearched;
     private float infinity;
@@ -24,28 +24,28 @@ public class AI : MonoBehaviour
     public AI()
     {
         infinity = 999999f;
-        pieceVal = new Dictionary<char, float>();
-        positionalVal = new Dictionary<char, float[]>();
+        pieceVal = new Dictionary<PieceE, float>();
+        positionalVal = new Dictionary<PieceE, float[]>();
         broken = false;
         stopWatch = new System.Diagnostics.Stopwatch();
 
         #region Piece Values
-        pieceVal.Add('P', 10.0f);
-        pieceVal.Add('N', 35.0f);
-        pieceVal.Add('B', 35.0f);
-        pieceVal.Add('R', 52.5f);
-        pieceVal.Add('Q', 100.0f);
-        pieceVal.Add('K', 100000.0f);
-        pieceVal.Add('p', -10.0f);
-        pieceVal.Add('n', -35.0f);
-        pieceVal.Add('b', -35.0f);
-        pieceVal.Add('r', -52.5f);
-        pieceVal.Add('q', -100.0f);
-        pieceVal.Add('k', -100000.0f);
+        pieceVal.Add((PieceE.Pawn | PieceE.White), 10.0f);
+        pieceVal.Add((PieceE.Knight | PieceE.White), 35.0f);
+        pieceVal.Add((PieceE.Bishop | PieceE.White), 35.0f);
+        pieceVal.Add((PieceE.Rook | PieceE.White), 52.5f);
+        pieceVal.Add((PieceE.Queen | PieceE.White), 100.0f);
+        pieceVal.Add((PieceE.King | PieceE.White), 100000.0f);
+        pieceVal.Add((PieceE.Pawn | PieceE.Black), -10.0f);
+        pieceVal.Add((PieceE.Knight | PieceE.Black), -35.0f);
+        pieceVal.Add((PieceE.Bishop | PieceE.Black), -35.0f);
+        pieceVal.Add((PieceE.Rook | PieceE.Black), -52.5f);
+        pieceVal.Add((PieceE.Queen | PieceE.Black), -100.0f);
+        pieceVal.Add((PieceE.King | PieceE.Black), -100000.0f);
         #endregion
 
         #region Positional Piece Values
-        positionalVal.Add('P', new float[] {0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        positionalVal.Add((PieceE.Pawn | PieceE.White), new float[] {0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,
                                             5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,  5.0f,
                                             1.0f,  1.0f,  2.0f,  3.0f,  3.0f,  2.0f,  1.0f,  1.0f,
                                             0.5f,  0.5f,  1.0f,  2.5f,  2.5f,  1.0f,  0.5f,  0.5f,
@@ -53,7 +53,7 @@ public class AI : MonoBehaviour
                                             0.5f, -0.5f, -1.0f,  0.0f,  0.0f, -1.0f, -0.5f,  0.5f,
                                             0.5f,  1.0f, 1.0f,  -2.0f, -2.0f,  1.0f,  1.0f,  0.5f,
                                             0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f});
-        positionalVal.Add('N', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
+        positionalVal.Add((PieceE.Knight | PieceE.White), new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
                                             -4.0f, -2.0f,  0.0f,  0.0f,  0.0f,  0.0f, -2.0f, -4.0f,
                                             -3.0f,  0.0f,  1.0f,  1.5f,  1.5f,  1.0f,  0.0f, -3.0f,
                                             -3.0f,  0.5f,  1.5f,  2.0f,  2.0f,  1.5f,  0.5f, -3.0f,
@@ -61,7 +61,7 @@ public class AI : MonoBehaviour
                                             -3.0f,  0.5f,  1.0f,  1.5f,  1.5f,  1.0f,  0.5f, -3.0f,
                                             -4.0f, -2.0f,  0.0f,  0.5f,  0.5f,  0.0f, -2.0f, -4.0f,
                                             -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f });
-        positionalVal.Add('B', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
+        positionalVal.Add((PieceE.Bishop | PieceE.White), new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
                                         -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  1.0f,  1.0f,  0.5f,  0.0f, -1.0f,
                                             -1.0f,  0.5f,  0.5f,  1.0f,  1.0f,  0.5f,  0.5f, -1.0f,
@@ -69,7 +69,7 @@ public class AI : MonoBehaviour
                                             -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f,
                                             -1.0f,  0.5f,  0.0f,  0.0f,  0.0f,  0.0f,  0.5f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f });
-        positionalVal.Add('R', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  0.0f,
+        positionalVal.Add((PieceE.Rook | PieceE.White), new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,  0.0f,
                                              0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,  0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
@@ -77,7 +77,7 @@ public class AI : MonoBehaviour
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                              0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f,  0.0f});
-        positionalVal.Add('Q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
+        positionalVal.Add((PieceE.Queen | PieceE.White), new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
                                             -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -1.0f,
                                             -0.5f,  0.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -0.5f,
@@ -85,7 +85,7 @@ public class AI : MonoBehaviour
                                             -1.0f,  0.5f,  0.5f,  0.5f,  0.5f,  0.5f,  0.0f, -1.0f,
                                             -1.0f,  0.0f,  0.5f,  0.0f,  0.0f,  0.0f,  0.0f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f});
-        positionalVal.Add('K', new float[] {-3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
+        positionalVal.Add((PieceE.King | PieceE.White), new float[] {-3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
                                              -3.0f, -4.0f, -4.0f, -5.0f, -5.0f, -4.0f, -4.0f, -3.0f,
@@ -93,7 +93,7 @@ public class AI : MonoBehaviour
                                              -1.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -1.0f,
                                               2.0f,  2.0f,  0.0f,  0.0f,  0.0f,  0.0f,  2.0f,  2.0f,
                                               2.0f,  3.0f,  1.0f,  0.0f,  0.0f,  1.0f,  3.0f,  2.0f });
-        positionalVal.Add('p', new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        positionalVal.Add((PieceE.Pawn | PieceE.Black), new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                                             0.5f, 1.0f, 1.0f, -2.0f, -2.0f, 1.0f, 1.0f, 0.5f,
                                             0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -1.0f, -0.5f, 0.5f,
                                             0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f, 0.0f,
@@ -101,7 +101,7 @@ public class AI : MonoBehaviour
                                             1.0f, 1.0f, 2.0f, 3.0f, 3.0f, 2.0f, 1.0f, 1.0f,
                                             5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f, 5.0f,
                                             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-        positionalVal.Add('n', new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
+        positionalVal.Add((PieceE.Knight | PieceE.Black), new float[] {-5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f,
                                             -4.0f, -2.0f, 0.0f, 0.5f, 0.5f, 0.0f, -2.0f, -4.0f,
                                             -3.0f, 0.5f, 1.0f, 1.5f, 1.5f, 1.0f, 0.5f, -3.0f,
                                             -3.0f, 0.0f, 1.5f, 2.0f, 2.0f, 1.5f, 0.0f, -3.0f,
@@ -109,7 +109,7 @@ public class AI : MonoBehaviour
                                             -3.0f, 0.0f, 1.0f, 1.5f, 1.5f, 1.0f, 0.0f, -3.0f,
                                             -4.0f, -2.0f, 0.0f, 0.0f, 0.0f, 0.0f, -2.0f, -4.0f,
                                             -5.0f, -4.0f, -3.0f, -3.0f, -3.0f, -3.0f, -4.0f, -5.0f});
-        positionalVal.Add('b', new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
+        positionalVal.Add((PieceE.Bishop | PieceE.Black), new float[] {-2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f,
                                             -1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, -1.0f,
                                             -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
                                             -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f,
@@ -117,7 +117,7 @@ public class AI : MonoBehaviour
                                             -1.0f, 0.0f, 0.5f, 1.0f, 1.0f, 0.5f, 0.0f, -1.0f,
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -2.0f});
-        positionalVal.Add('r', new float[] {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
+        positionalVal.Add((PieceE.Rook | PieceE.Black), new float[] {0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
@@ -125,7 +125,7 @@ public class AI : MonoBehaviour
                                             -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -0.5f,
                                             0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f,
                                             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f});
-        positionalVal.Add('q', new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
+        positionalVal.Add((PieceE.Queen | PieceE.Black), new float[] {-2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f,
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f, -1.0f,
                                             -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -1.0f,
                                             -0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -0.5f,
@@ -133,7 +133,7 @@ public class AI : MonoBehaviour
                                             -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.0f, -1.0f,
                                             -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
                                             -2.0f, -1.0f, -1.0f, -0.5f, -0.5f, -1.0f, -1.0f, -2.0f});
-        positionalVal.Add('k', new float[] {2.0f, 3.0f, 1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 2.0f,
+        positionalVal.Add((PieceE.King | PieceE.Black), new float[] {2.0f, 3.0f, 1.0f, 0.0f, 0.0f, 1.0f, 3.0f, 2.0f,
                                             2.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2.0f, 2.0f,
                                             -1.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -2.0f, -1.0f,
                                             -2.0f, -3.0f, -3.0f, -4.0f, -4.0f, -3.0f, -3.0f, -2.0f,
@@ -305,7 +305,7 @@ public class AI : MonoBehaviour
         {
             try
             {
-                if (Char.IsLower(GameManager.instance.board.squares[i].piece))
+                if (!PieceEnum.IsWhite(GameManager.instance.board.squares[i].piece))
                     sum += pieceVal[GameManager.instance.board.squares[i].piece] - positionalVal[GameManager.instance.board.squares[i].piece][i];
                 else
                     sum += pieceVal[GameManager.instance.board.squares[i].piece] + positionalVal[GameManager.instance.board.squares[i].piece][i];
