@@ -1,21 +1,21 @@
- Rook, Black |   |   |   |   |   | Rook, Black |   | 8
+   |   | King, Black | Rook, Black |   |   |   | Rook, Black | 8
 ————————————————————————————————
- Pawn, Black | Pawn, Black | Pawn, Black | King, Black |   | Pawn, Black |   | Pawn, Black | 7
+   | Bishop, Black | Pawn, Black | Pawn, Black | Knight, Black | Pawn, Black | Pawn, Black |   | 7
 ————————————————————————————————
-   |   | Bishop, Black | Pawn, Black | Pawn, Black |   |   |   | 6
+ Pawn, Black | Pawn, Black |   |   |   | Queen, Black |   | Pawn, Black | 6
 ————————————————————————————————
-   |   |   |   |   |   |   |   | 5
+   |   |   |   |   |   |   | Rook, White | 5
 ————————————————————————————————
-   |   |   |   | Pawn, White | Pawn, White | Knight, Black | Bishop, White | 4
+   |   | Queen, White |   |   |   |   |   | 4
 ————————————————————————————————
- Pawn, White |   |   |   |   |   | Pawn, White |   | 3
+   |   | Pawn, White |   | Pawn, White | Knight, White | Pawn, White |   | 3
 ————————————————————————————————
- Pawn, White |   | Pawn, White | Knight, White |   |   |   | Pawn, White | 2
+ Pawn, White |   | Pawn, White |   |   | Pawn, White | Pawn, White |   | 2
 ————————————————————————————————
-   |   | Rook, White |   |   | Rook, White | King, White |   | 1
+   | King, White |   |   |   | Bishop, White |   | Rook, White | 1
 ————————————————————————————————
 ————————————————————————————————
  a | b | c | d | e | f | g | h 
 
 
-Fen: Rook, Black5Rook, Black1/Pawn, BlackPawn, BlackPawn, BlackKing, Black1Pawn, Black1Pawn, Black/2Bishop, BlackPawn, BlackPawn, Black3/8/4Pawn, WhitePawn, WhiteKnight, BlackBishop, White/Pawn, White5Pawn, White1/Pawn, White1Pawn, WhiteKnight, White3Pawn, White/2Rook, White2Rook, WhiteKing, White1/
+Fen: 2King, BlackRook, Black3Rook, Black/1Bishop, BlackPawn, BlackPawn, BlackKnight, BlackPawn, BlackPawn, Black1/Pawn, BlackPawn, Black3Queen, Black1Pawn, Black/7Rook, White/2Queen, White5/2Pawn, White1Pawn, WhiteKnight, WhitePawn, White1/Pawn, White1Pawn, White2Pawn, WhitePawn, White1/1King, White3Bishop, White1Rook, White/
