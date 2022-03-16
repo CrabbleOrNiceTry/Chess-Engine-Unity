@@ -44,6 +44,7 @@ public class InitializeBoard : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
+                PieceE pieceEnum;
                 bool noPiece = false;
                 bool noFenSub = false;
                 if (Char.IsDigit(fen[fenCount]) && fen[fenCount] - '0' > 0)
@@ -61,13 +62,42 @@ public class InitializeBoard : MonoBehaviour
                 temp.GetComponent<Square>().SetPosition((new string((char)(j + 97), 1) + "" + (7 - i + 1)));
                 temp.GetComponent<Square>().index = count;
                 if (!noPiece)
-                    temp.GetComponent<Square>().piece = fen[fenCount];
+                {
+                    char p = fen[fenCount];
+                    if (Char.IsLower(p))
+                    {
+                        pieceEnum = PieceE.Black;
+                    }
+                    else
+                    {
+                        pieceEnum = PieceE.White;
+                    }
+                    p = Char.ToUpper(p);
+                    if (p == 'P')
+                        pieceEnum |= PieceE.Pawn;
+                    else if (p == 'R')
+                        pieceEnum |= PieceE.Rook;
+                    else if (p == 'N')
+                        pieceEnum |= PieceE.Knight;
+                    else if (p == 'B')
+                        pieceEnum |= PieceE.Bishop;
+                    else if (p == 'Q')
+                        pieceEnum |= PieceE.Queen;
+                    else if (p == 'K')
+                        pieceEnum |= PieceE.King;
+                }
+                else
+                {
+                    pieceEnum = PieceE.None;
+                }
+                temp.GetComponent<Square>().piece = pieceEnum;
                 GameManager.instance.board.squaresList.Add(temp.GetComponent<Square>());
                 xPos += size;
                 if (!noFenSub)
                     fenCount++;
                 count++;
             }
+
             xPos = originalX;
             yPos -= size;
             black = !black;
@@ -96,6 +126,7 @@ public class InitializeBoard : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
+                PieceE pieceEnum;
                 if (Char.IsDigit(fen[fenCount]) && fen[fenCount] - '0' > 0)
                 {
                     int f = fen[fenCount] - '0';
@@ -117,6 +148,29 @@ public class InitializeBoard : MonoBehaviour
 
                 GameObject pieceSprite = Instantiate(piece, new Vector3(xPos, yPos, -1f), Quaternion.identity, canvas);
                 pieceSprite.GetComponent<Piece>().piece = "" + fen[fenCount];
+                char p = fen[fenCount];
+                if (Char.IsLower(p))
+                {
+                    pieceEnum = PieceE.Black;
+                }
+                else
+                {
+                    pieceEnum = PieceE.White;
+                }
+                p = Char.ToUpper(p);
+                if (p == 'P')
+                    pieceEnum |= PieceE.Pawn;
+                else if (p == 'R')
+                    pieceEnum |= PieceE.Rook;
+                else if (p == 'N')
+                    pieceEnum |= PieceE.Knight;
+                else if (p == 'B')
+                    pieceEnum |= PieceE.Bishop;
+                else if (p == 'Q')
+                    pieceEnum |= PieceE.Queen;
+                else if (p == 'K')
+                    pieceEnum |= PieceE.King;
+                pieceSprite.GetComponent<Piece>().pieceE = pieceEnum;
                 pieceSprite.GetComponent<Piece>().currentIndex = pieceCount;
                 GameManager.instance.board.squaresList[pieceCount].pieceObj = pieceSprite;
                 pieceSprite.GetComponent<UnityEngine.UI.RawImage>().texture = texture;

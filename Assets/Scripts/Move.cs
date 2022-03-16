@@ -6,8 +6,8 @@ public class Move
 {
     public Square original;
     public Square newSquare;
-    public char pieceOriginal;
-    public char pieceNew;
+    public PieceE pieceOriginal;
+    public PieceE pieceNew;
     public string castle;
     public bool isCastle;
     public bool pawnPromote;

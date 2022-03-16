@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 0}
-  white: 0
+  white: 1
   computer: {fileID: 0}
 --- !u!20 &519420031
 Camera:

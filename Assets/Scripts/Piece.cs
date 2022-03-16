@@ -12,6 +12,7 @@ public class Piece : MonoBehaviour
     private Square originalSquare;
     public bool wasControlled;
     public string piece;
+    public PieceE pieceE;
     public bool hasMoved;
 
     // Current index on 64 integer array board.
@@ -23,6 +24,7 @@ public class Piece : MonoBehaviour
         wasControlled = false;
         hasMoved = false;
         piece = "";
+        pieceE = PieceE.None;
     }
 
     void Update()
@@ -50,7 +52,7 @@ public class Piece : MonoBehaviour
                     {
                         i.castleRook.transform.position = i.newRookPosition;
                     }
-                    if (closestObjectToMouse.GetComponent<Square>().piece != '\0')
+                    if (closestObjectToMouse.GetComponent<Square>().piece != PieceE.None)
                     {
                         Destroy(closestObjectToMouse.GetComponent<Square>().pieceObj);
                     }
@@ -97,7 +99,7 @@ public class Piece : MonoBehaviour
                 // Change the position of the original object to where it should be after the move
 
                 // Destroy the piece that is being taken if present.
-                if (computerMove.newSquare.piece != '\0')
+                if (computerMove.newSquare.piece != PieceE.None)
                 {
                     Debug.Log(computerMove.newSquare.piece);
                     computerMove.newSquare.pieceObj.SetActive(false);
